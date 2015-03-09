@@ -5,3 +5,4 @@ bundle_id = org.sugarlabs.WriteBooks
 exec = sugar-activity activity.WriteBooksActivity
 icon = writebooks
 license = GPLv2+
+max_participants = 1

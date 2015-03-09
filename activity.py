@@ -17,20 +17,20 @@
 """WriteBooks Activity: A tool to write simple books."""
 
 from gi.repository import Gtk
-import logging
-
-from gettext import gettext as _
+from gi.repository import Pango
 
 from sugar3.activity import activity
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.activity.widgets import ActivityToolbarButton
 from sugar3.activity.widgets import StopButton
+from sugar3.graphics import style
+
+from imagecanvas import ImageCanvas
 
 
 class WriteBooksActivity(activity.Activity):
 
     def __init__(self, handle):
-        """Set up the HelloWorld activity."""
         activity.Activity.__init__(self, handle)
 
         # we do not have collaboration features
@@ -53,11 +53,34 @@ class WriteBooksActivity(activity.Activity):
         self.set_toolbar_box(toolbar_box)
         toolbar_box.show_all()
 
-        label = Gtk.Label('test')
+        self._image_canvas = ImageCanvas()
+        self._image_canvas.set_halign(Gtk.Align.CENTER)
+
+        self._text_editor = TextEditor()
+
+        background = Gtk.EventBox()
 
         vbox = Gtk.VBox()
-        vbox.pack_start(label, False, False, 10)
+        vbox.pack_start(self._image_canvas, True, True, 10)
+        vbox.pack_start(self._text_editor, False, False, 10)
 
-        self.set_canvas(vbox)
+        background.add(vbox)
+        self.set_canvas(background)
 
         self.show_all()
+
+
+class TextEditor(Gtk.TextView):
+
+    def __init__(self):
+        Gtk.TextView.__init__(self)
+
+        self.set_wrap_mode(Gtk.WrapMode.WORD)
+        self.set_pixels_above_lines(0)
+        self.set_margin_left(style.GRID_CELL_SIZE)
+        self.set_margin_right(style.GRID_CELL_SIZE)
+        self.set_margin_bottom(style.DEFAULT_PADDING)
+        self.set_size_request(-1, style.GRID_CELL_SIZE * 1.5)
+
+        font_desc = Pango.font_description_from_string('14')
+        self.modify_font(font_desc)
