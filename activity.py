@@ -16,13 +16,18 @@
 
 """WriteBooks Activity: A tool to write simple books."""
 
+from gettext import gettext as _
+
 from gi.repository import Gtk
 from gi.repository import Pango
 
 from sugar3.activity import activity
-from sugar3.graphics.toolbarbox import ToolbarBox
-from sugar3.activity.widgets import ActivityToolbarButton
 from sugar3.activity.widgets import StopButton
+from sugar3.activity.widgets import ActivityToolbarButton
+from sugar3.activity.widgets import EditToolbar
+from sugar3.graphics.toolbarbox import ToolbarBox
+from sugar3.graphics.toolbarbox import ToolbarButton
+from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics import style
 
 from imagecanvas import ImageCanvas
@@ -41,6 +46,35 @@ class WriteBooksActivity(activity.Activity):
 
         activity_button = ActivityToolbarButton(self)
         toolbar_box.toolbar.insert(activity_button, 0)
+
+        self._edit_toolbar = EditToolbar()
+        edit_toolbar_button = ToolbarButton(
+            page=self._edit_toolbar, icon_name='toolbar-edit')
+        toolbar_box.toolbar.insert(edit_toolbar_button, 1)
+
+        set_background_button = ToolButton('set-background')
+        set_background_button.set_tooltip(_('Set the background'))
+        toolbar_box.toolbar.insert(set_background_button, -1)
+
+        insert_picture_button = ToolButton('insert-picture')
+        insert_picture_button.set_tooltip(_('Add a picture'))
+        toolbar_box.toolbar.insert(insert_picture_button, -1)
+
+        rotate_left_button = ToolButton('object-rotate-left')
+        rotate_left_button.set_tooltip(_('Rotate left'))
+        toolbar_box.toolbar.insert(rotate_left_button, -1)
+
+        rotate_right_button = ToolButton('object-rotate-right')
+        rotate_right_button.set_tooltip(_('Rotate right'))
+        toolbar_box.toolbar.insert(rotate_right_button, -1)
+
+        mirror_horizontal_button = ToolButton('mirror-horizontal')
+        mirror_horizontal_button.set_tooltip(_('Horizontal mirror'))
+        toolbar_box.toolbar.insert(mirror_horizontal_button, -1)
+
+        mirror_vertical_button = ToolButton('mirror-vertical')
+        mirror_vertical_button.set_tooltip(_('Vertical mirror'))
+        toolbar_box.toolbar.insert(mirror_vertical_button, -1)
 
         separator = Gtk.SeparatorToolItem()
         separator.props.draw = False
