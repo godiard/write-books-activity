@@ -16,6 +16,7 @@
 
 """WriteBooks Activity: A tool to write simple books."""
 
+import logging
 from gettext import gettext as _
 
 from gi.repository import Gtk
@@ -31,6 +32,11 @@ from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics import style
 
 from imagecanvas import ImageCanvas
+from objectchooser import ObjectChooser
+try:
+    from sugar3.graphics.objectchooser import FILTER_TYPE_GENERIC_MIME
+except:
+    FILTER_TYPE_GENERIC_MIME = 'generic_mime'
 
 
 class WriteBooksActivity(activity.Activity):
@@ -54,6 +60,8 @@ class WriteBooksActivity(activity.Activity):
 
         set_background_button = ToolButton('set-background')
         set_background_button.set_tooltip(_('Set the background'))
+        set_background_button.connect('clicked',
+                                      self.__set_background_clicked_cb)
         toolbar_box.toolbar.insert(set_background_button, -1)
 
         insert_picture_button = ToolButton('insert-picture')
@@ -102,6 +110,22 @@ class WriteBooksActivity(activity.Activity):
         self.set_canvas(background)
 
         self.show_all()
+
+    def __set_background_clicked_cb(self, button):
+
+        chooser = ObjectChooser(self, what_filter='Image',
+                                filter_type=FILTER_TYPE_GENERIC_MIME,
+                                show_preview=True)
+        chooser.connect('response', self._chooser_response_cb)
+        chooser.show()
+
+    def _chooser_response_cb(self, chooser, response_id):
+        logging.debug('JournalActivityDBusService._chooser_response_cb')
+        if response_id == Gtk.ResponseType.ACCEPT:
+            object_id = chooser.get_selected_object_id()
+            logging.error('Object %s selected', object_id)
+        chooser.destroy()
+        del chooser
 
 
 class TextEditor(Gtk.TextView):
