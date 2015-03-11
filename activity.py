@@ -16,7 +16,8 @@
 
 """WriteBooks Activity: A tool to write simple books."""
 
-import logging
+import os
+import time
 from gettext import gettext as _
 
 from gi.repository import Gtk
@@ -30,6 +31,7 @@ from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics import style
+from sugar3.datastore import datastore
 
 from imagecanvas import ImageCanvas
 from objectchooser import ObjectChooser
@@ -122,14 +124,18 @@ class WriteBooksActivity(activity.Activity):
                                 show_preview=True,
                                 additional_path=SCRATCH_BACKGROUNDS_PATH,
                                 additional_path_label=_('Backgrounds'))
-        chooser.connect('response', self._chooser_response_cb)
+        chooser.connect('response', self.__set_backgroud_chooser_response_cb)
         chooser.show()
 
-    def _chooser_response_cb(self, chooser, response_id):
-        logging.debug('JournalActivityDBusService._chooser_response_cb')
+    def __set_backgroud_chooser_response_cb(self, chooser, response_id):
         if response_id == Gtk.ResponseType.ACCEPT:
-            object_id = chooser.get_selected_object_id()
-            logging.error('Object %s selected', object_id)
+            jobject = datastore.get(chooser.get_selected_object_id())
+            if jobject and jobject.file_path:
+                tempfile_name = \
+                    os.path.join(self.get_activity_root(),
+                                 'instance', 'tmp%i' % time.time())
+                os.link(jobject.file_path, tempfile_name)
+                self._image_canvas.set_background(tempfile_name)
         chooser.destroy()
         del chooser
 

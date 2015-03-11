@@ -3,6 +3,7 @@
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import GdkPixbuf
 
 
 class ImageCanvas(Gtk.DrawingArea):
@@ -17,6 +18,7 @@ class ImageCanvas(Gtk.DrawingArea):
             Gdk.EventMask.BUTTON_MOTION_MASK)
 
         self._background = None
+        self._background_path = None
         self._images = []
 
         """
@@ -47,6 +49,11 @@ class ImageCanvas(Gtk.DrawingArea):
         self._height = Gdk.Screen.height() / 4 * 3
         self._width = self._height / 3 * 4
         self.set_size_request(self._width, self._height)
+
+    def set_background(self, file_path):
+        self._background_path = file_path
+        self._background = None
+        self.queue_draw()
 
     """
     def set_globo_activo(self, globo):
@@ -81,10 +88,18 @@ class ImageCanvas(Gtk.DrawingArea):
     def draw_in_context(self, ctx):
         # Draw the background image
 
-        if self._background is None:
+        if self._background is None and self._background_path is not None:
+            self._background = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                self._background_path, self._width, self._height)
+
+        if self._background_path is None:
+            # draw a white background
             ctx.rectangle(0, 0, self._width, self._height)
             ctx.set_source_rgb(1, 1, 1)
             ctx.fill()
+        else:
+            Gdk.cairo_set_source_pixbuf(ctx, self._background, 0, 0)
+            ctx.paint()
 
         # Draw the border
         ctx.save()
