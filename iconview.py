@@ -23,7 +23,14 @@ from gi.repository import Gtk
 from gi.repository import GLib
 
 from sugar3.graphics.icon import Icon
+from sugar3.graphics import style
 from jarabe.journal import model
+
+try:
+    from sugar3.activity.activity import PREVIEW_SIZE
+except:
+    PREVIEW_SIZE = style.zoom(300), style.zoom(225)
+
 try:
     from sugar3.graphics.objectchooser import get_preview_pixbuf
 except:
@@ -92,11 +99,6 @@ except:
 
 
 from sugar3.graphics import style
-
-try:
-    from sugar3.activity.activity import PREVIEW_SIZE
-except:
-    PREVIEW_SIZE = style.zoom(300), style.zoom(225)
 
 from iconmodel import IconModel
 

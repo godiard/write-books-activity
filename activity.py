@@ -38,6 +38,10 @@ try:
 except:
     FILTER_TYPE_GENERIC_MIME = 'generic_mime'
 
+# TODO: get the real scratch path
+SCRATCH_PATH = '/home/gonzalo/sugar-devel/scratch/scratchonlinux/trunk/scratch'
+SCRATCH_BACKGROUNDS_PATH = SCRATCH_PATH + '/Media/Backgrounds'
+
 
 class WriteBooksActivity(activity.Activity):
 
@@ -115,7 +119,9 @@ class WriteBooksActivity(activity.Activity):
 
         chooser = ObjectChooser(self, what_filter='Image',
                                 filter_type=FILTER_TYPE_GENERIC_MIME,
-                                show_preview=True)
+                                show_preview=True,
+                                additional_path=SCRATCH_BACKGROUNDS_PATH,
+                                additional_path_label=_('Backgrounds'))
         chooser.connect('response', self._chooser_response_cb)
         chooser.show()
 

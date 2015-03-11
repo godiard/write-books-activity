@@ -32,10 +32,10 @@ except:
 from jarabe.journal.listview import BaseListView
 from jarabe.journal.listmodel import ListModel
 from jarabe.journal.journaltoolbox import MainToolbox
-from jarabe.journal.volumestoolbar import VolumesToolbar
 from jarabe.model import bundleregistry
 
 from iconview import IconView
+from volumestoolbar import VolumesToolbar
 
 
 class ObjectChooser(Gtk.Window):
@@ -47,7 +47,8 @@ class ObjectChooser(Gtk.Window):
     }
 
     def __init__(self, parent=None, what_filter='', filter_type=None,
-                 show_preview=False):
+                 show_preview=False, additional_path=None,
+                 additional_path_label=None):
         Gtk.Window.__init__(self)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.set_decorated(False)
@@ -76,7 +77,8 @@ class ObjectChooser(Gtk.Window):
         self.add(vbox)
         vbox.show()
 
-        title_box = TitleBox(what_filter, filter_type)
+        title_box = TitleBox(what_filter, filter_type, additional_path,
+                             additional_path_label)
         title_box.connect('volume-changed', self.__volume_changed_cb)
         title_box.close_button.connect('clicked',
                                        self.__close_button_clicked_cb)
@@ -114,7 +116,10 @@ class ObjectChooser(Gtk.Window):
         height = Gdk.Screen.height() - style.GRID_CELL_SIZE * 2
         self.set_size_request(width, height)
 
-        self._toolbar.update_filters('/', what_filter, filter_type)
+        if additional_path is not None:
+            self._toolbar.set_mount_point(additional_path)
+        else:
+            self._toolbar.update_filters('/', what_filter, filter_type)
 
     def __realize_cb(self, chooser, parent):
         self.get_window().set_transient_for(parent)
@@ -167,8 +172,11 @@ class ObjectChooser(Gtk.Window):
 class TitleBox(VolumesToolbar):
     __gtype_name__ = 'TitleBox'
 
-    def __init__(self, what_filter='', filter_type=None):
+    def __init__(self, what_filter='', filter_type=None,  additional_path=None,
+                 additional_path_label=None):
         VolumesToolbar.__init__(self)
+        if additional_path is not None:
+            self.add_folder_button(additional_path, additional_path_label)
 
         label = Gtk.Label()
         title = _('Choose an object')
