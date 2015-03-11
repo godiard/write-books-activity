@@ -30,6 +30,7 @@ from sugar3.activity.widgets import EditToolbar
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
+from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
 from sugar3.datastore import datastore
 
@@ -103,16 +104,38 @@ class WriteBooksActivity(activity.Activity):
 
         self._image_canvas = ImageCanvas()
         self._image_canvas.set_halign(Gtk.Align.CENTER)
+        self._image_canvas.set_valign(Gtk.Align.CENTER)
+        self._image_canvas.set_vexpand(True)
 
         self._text_editor = TextEditor()
 
+        self._page_counter_label = Gtk.Label('1/1')
+        self._page_counter_label.set_halign(Gtk.Align.END)
+        self._page_counter_label.set_valign(Gtk.Align.END)
+
+        self._prev_page_btn = Gtk.Button()
+        self._prev_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
+                                           icon_name='go-previous'))
+        self._prev_page_btn.set_valign(Gtk.Align.CENTER)
+
+        self._next_page_btn = Gtk.Button()
+        self._next_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
+                                           icon_name='go-next'))
+        self._next_page_btn.set_valign(Gtk.Align.CENTER)
+
         background = Gtk.EventBox()
 
-        vbox = Gtk.VBox()
-        vbox.pack_start(self._image_canvas, True, True, 10)
-        vbox.pack_start(self._text_editor, False, False, 10)
+        grid = Gtk.Grid()
+        grid.set_halign(Gtk.Align.CENTER)
 
-        background.add(vbox)
+        grid.attach(self._image_canvas, 1, 0, 1, 3)
+        self._text_editor.set_vexpand(False)
+        grid.attach(self._text_editor, 1, 3, 1, 1)
+        grid.attach(self._page_counter_label, 2, 2, 1, 1)
+        grid.attach(self._prev_page_btn, 0, 1, 1, 1)
+        grid.attach(self._next_page_btn, 2, 1, 1, 1)
+
+        background.add(grid)
         self.set_canvas(background)
 
         self.show_all()
