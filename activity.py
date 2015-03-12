@@ -110,18 +110,41 @@ class WriteBooksActivity(activity.Activity):
         self._text_editor = TextEditor()
 
         self._page_counter_label = Gtk.Label('1/1')
+        font_desc = Pango.font_description_from_string('12')
+        self._page_counter_label.modify_font(font_desc)
         self._page_counter_label.set_halign(Gtk.Align.END)
         self._page_counter_label.set_valign(Gtk.Align.END)
+
+        self._add_page_btn = Gtk.Button()
+        self._add_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
+                                          icon_name='list-add'))
+        self._add_page_btn.set_valign(Gtk.Align.START)
+        self._add_page_btn.set_margin_top(style.DEFAULT_PADDING)
+        self._add_page_btn.set_margin_left(style.DEFAULT_PADDING)
 
         self._prev_page_btn = Gtk.Button()
         self._prev_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
                                            icon_name='go-previous'))
         self._prev_page_btn.set_valign(Gtk.Align.CENTER)
+        self._prev_page_btn.set_margin_right(style.DEFAULT_PADDING)
 
         self._next_page_btn = Gtk.Button()
         self._next_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
                                            icon_name='go-next'))
         self._next_page_btn.set_valign(Gtk.Align.CENTER)
+        self._next_page_btn.set_margin_left(style.DEFAULT_PADDING)
+
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(".button {background-color: #c0c0c0;}")
+        style_context = self._add_page_btn.get_style_context()
+        style_context.add_provider(css_provider,
+                                   Gtk.STYLE_PROVIDER_PRIORITY_USER)
+        style_context = self._prev_page_btn.get_style_context()
+        style_context.add_provider(css_provider,
+                                   Gtk.STYLE_PROVIDER_PRIORITY_USER)
+        style_context = self._next_page_btn.get_style_context()
+        style_context.add_provider(css_provider,
+                                   Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
         background = Gtk.EventBox()
 
@@ -133,6 +156,7 @@ class WriteBooksActivity(activity.Activity):
         grid.attach(self._text_editor, 1, 3, 1, 1)
         grid.attach(self._page_counter_label, 2, 2, 1, 1)
         grid.attach(self._prev_page_btn, 0, 1, 1, 1)
+        grid.attach(self._add_page_btn, 2, 0, 1, 1)
         grid.attach(self._next_page_btn, 2, 1, 1, 1)
 
         background.add(grid)
