@@ -24,7 +24,7 @@ from gi.repository import GLib
 
 from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
-from jarabe.journal import model
+from jarabelocal.journal import model
 
 try:
     from sugar3.activity.activity import PREVIEW_SIZE

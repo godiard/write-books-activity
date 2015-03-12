@@ -24,31 +24,24 @@ from gi.repository import Wnck
 
 from sugar3.graphics import style
 from sugar3.graphics.toolbutton import ToolButton
-try:
-    from sugar3.graphics.objectchooser import FILTER_TYPE_MIME_BY_ACTIVITY
-except:
-    FILTER_TYPE_MIME_BY_ACTIVITY = 'mime_by_activity'
-
-from jarabe.journal.listview import BaseListView
-from jarabe.journal.listmodel import ListModel
-from jarabe.journal.journaltoolbox import MainToolbox
-from jarabe.model import bundleregistry
+from sugar3.graphics.toolbarbox import ToolbarBox
+from sugar3.graphics import iconentry
+from sugar3 import mime
 
 from iconview import IconView
-from volumestoolbar import VolumesToolbar
+
+_AUTOSEARCH_TIMEOUT = 1000
 
 
-class ObjectChooser(Gtk.Window):
+class ImageFileChooser(Gtk.Window):
 
-    __gtype_name__ = 'ObjectChooser'
+    #__gtype_name__ = 'ObjectChooser'
 
     __gsignals__ = {
         'response': (GObject.SignalFlags.RUN_FIRST, None, ([int])),
     }
 
-    def __init__(self, parent=None, what_filter='', filter_type=None,
-                 show_preview=False, additional_path=None,
-                 additional_path_label=None):
+    def __init__(self, path, title=None, parent=None):
         Gtk.Window.__init__(self)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.set_decorated(False)
@@ -57,7 +50,6 @@ class ObjectChooser(Gtk.Window):
         self.set_has_resize_grip(False)
 
         self._selected_object_id = None
-        self._show_preview = show_preview
 
         self.add_events(Gdk.EventMask.VISIBILITY_NOTIFY_MASK)
         self.connect('visibility-notify-event',
@@ -77,9 +69,7 @@ class ObjectChooser(Gtk.Window):
         self.add(vbox)
         vbox.show()
 
-        title_box = TitleBox(what_filter, filter_type, additional_path,
-                             additional_path_label)
-        title_box.connect('volume-changed', self.__volume_changed_cb)
+        title_box = TitleBox(title)
         title_box.close_button.connect('clicked',
                                        self.__close_button_clicked_cb)
         title_box.set_size_request(-1, style.GRID_CELL_SIZE)
@@ -90,36 +80,23 @@ class ObjectChooser(Gtk.Window):
         vbox.pack_start(separator, False, True, 0)
         separator.show()
 
-        self._toolbar = MainToolbox(default_what_filter=what_filter,
-                                    default_filter_type=filter_type)
+        self._toolbar = SearchToolbox(path)
         self._toolbar.connect('query-changed', self.__query_changed_cb)
         self._toolbar.set_size_request(-1, style.GRID_CELL_SIZE)
         vbox.pack_start(self._toolbar, False, True, 0)
         self._toolbar.show()
 
-        if not self._show_preview:
-            self._list_view = ChooserListView(self._toolbar)
-            self._list_view.connect('entry-activated',
-                                    self.__entry_activated_cb)
-            self._list_view.connect('clear-clicked', self.__clear_clicked_cb)
-            vbox.pack_start(self._list_view, True, True, 0)
-            self._list_view.show()
-        else:
-            self._icon_view = IconView(self._toolbar)
-            self._icon_view.connect('entry-activated',
-                                    self.__entry_activated_cb)
-            self._icon_view.connect('clear-clicked', self.__clear_clicked_cb)
-            vbox.pack_start(self._icon_view, True, True, 0)
-            self._icon_view.show()
+        self._icon_view = IconView(self._toolbar)
+        self._icon_view.connect('entry-activated',
+                                self.__entry_activated_cb)
+        self._icon_view.connect('clear-clicked', self.__clear_clicked_cb)
+        vbox.pack_start(self._icon_view, True, True, 0)
+        self._icon_view.show()
 
         width = Gdk.Screen.width() - style.GRID_CELL_SIZE * 2
         height = Gdk.Screen.height() - style.GRID_CELL_SIZE * 2
         self.set_size_request(width, height)
-
-        if additional_path is not None:
-            self._toolbar.set_mount_point(additional_path)
-        else:
-            self._toolbar.update_filters('/', what_filter, filter_type)
+        self._icon_view.update_with_query(self._toolbar.get_query())
 
     def __realize_cb(self, chooser, parent):
         self.get_window().set_transient_for(parent)
@@ -148,10 +125,7 @@ class ObjectChooser(Gtk.Window):
         return self._selected_object_id
 
     def __query_changed_cb(self, toolbar, query):
-        if not self._show_preview:
-            self._list_view.update_with_query(query)
-        else:
-            self._icon_view.update_with_query(query)
+        self._icon_view.update_with_query(query)
 
     def __volume_changed_cb(self, volume_toolbar, mount_point):
         logging.debug('Selected volume: %r.', mount_point)
@@ -160,33 +134,19 @@ class ObjectChooser(Gtk.Window):
     def __visibility_notify_event_cb(self, window, event):
         logging.debug('visibility_notify_event_cb %r', self)
         visible = event.get_state() == Gdk.VisibilityState.FULLY_OBSCURED
-        if not self._show_preview:
-            self._list_view.set_is_visible(visible)
-        else:
-            self._icon_view.set_is_visible(visible)
+        self._icon_view.set_is_visible(visible)
 
     def __clear_clicked_cb(self, list_view):
         self._toolbar.clear_query()
 
 
-class TitleBox(VolumesToolbar):
-    __gtype_name__ = 'TitleBox'
+class TitleBox(Gtk.Toolbar):
 
-    def __init__(self, what_filter='', filter_type=None,  additional_path=None,
-                 additional_path_label=None):
-        VolumesToolbar.__init__(self)
-        if additional_path is not None:
-            self.add_folder_button(additional_path, additional_path_label)
-
+    def __init__(self, title=None):
+        Gtk.Toolbar.__init__(self)
         label = Gtk.Label()
-        title = _('Choose an object')
-        if filter_type == FILTER_TYPE_MIME_BY_ACTIVITY:
-            registry = bundleregistry.get_registry()
-            bundle = registry.get_bundle(what_filter)
-            if bundle is not None:
-                title = _('Choose an object to open with %s activity') % \
-                    bundle.get_name()
-
+        if title is None:
+            title = _('Choose an image')
         label.set_markup('<b>%s</b>' % title)
         label.set_alignment(0, 0.5)
         self._add_widget(label, expand=True)
@@ -207,44 +167,85 @@ class TitleBox(VolumesToolbar):
         tool_item.show()
 
 
-class ChooserListView(BaseListView):
-    __gtype_name__ = 'ChooserListView'
+class SearchToolbox(ToolbarBox):
 
     __gsignals__ = {
-        'entry-activated': (GObject.SignalFlags.RUN_FIRST,
-                            None,
-                            ([str])),
+        'query-changed': (GObject.SignalFlags.RUN_FIRST, None, ([object])),
     }
 
-    def __init__(self, toolbar):
-        BaseListView.__init__(self, None)
-        self._toolbar = toolbar
+    def __init__(self, path):
+        ToolbarBox.__init__(self)
+        self._path = path
+        self.search_entry = iconentry.IconEntry()
+        try:
+            self.search_entry.set_icon_from_name(iconentry.ICON_ENTRY_PRIMARY,
+                                                'entry-search')
+        except:
+            pass
 
-        self.cell_icon.props.show_palette = False
-        self.tree_view.props.hover_selection = True
+        text = _('Search')
+        self.search_entry.set_placeholder_text(text)
+        self.search_entry.connect('activate', self._search_entry_activated_cb)
+        self.search_entry.connect('changed', self._search_entry_changed_cb)
+        self.search_entry.add_clear_button()
+        self._autosearch_timer = None
+        self._add_widget(self.search_entry, expand=True)
 
-        self.tree_view.connect('button-release-event',
-                               self.__button_release_event_cb)
+        self._query = self._build_query()
 
-    def _can_clear_query(self):
-        return self._toolbar.is_filter_changed()
+    def _add_widget(self, widget, expand=False):
+        tool_item = Gtk.ToolItem()
+        tool_item.set_expand(expand)
 
-    def __entry_activated_cb(self, entry):
-        self.emit('entry-activated', entry)
+        tool_item.add(widget)
+        widget.show()
 
-    def _favorite_clicked_cb(self, cell, path):
-        pass
+        self.toolbar.insert(tool_item, -1)
+        tool_item.show()
 
-    def __button_release_event_cb(self, tree_view, event):
-        if event.window != tree_view.get_bin_window():
-            return False
+    def get_query(self):
+        return self._query
 
-        pos = tree_view.get_path_at_pos(int(event.x), int(event.y))
-        if pos is None:
-            return False
+    def _build_query(self):
+        query = {}
+        query['mountpoints'] = [self._path]
 
-        path, column_, x_, y_ = pos
-        uid = tree_view.get_model()[path][ListModel.COLUMN_UID]
-        self.emit('entry-activated', uid)
+        generic_type = mime.get_generic_type('Image')
+        mime_types = generic_type.mime_types
+        query['mime_type'] = mime_types
 
+        if self.search_entry.props.text:
+            text = self.search_entry.props.text.strip()
+            if text:
+                query['query'] = text
+        return query
+
+    def _search_entry_activated_cb(self, search_entry):
+        if self._autosearch_timer:
+            GObject.source_remove(self._autosearch_timer)
+        self._update_if_needed()
+
+    def _update_if_needed(self):
+        new_query = self._build_query()
+        if self._query != new_query:
+            self._query = new_query
+            self.emit('query-changed', self._query)
+
+    def _search_entry_changed_cb(self, search_entry):
+        if not search_entry.props.text:
+            search_entry.activate()
+            return
+
+        if self._autosearch_timer:
+            GObject.source_remove(self._autosearch_timer)
+        self._autosearch_timer = GObject.timeout_add(_AUTOSEARCH_TIMEOUT,
+                                                     self._autosearch_timer_cb)
+
+    def _autosearch_timer_cb(self):
+        logging.debug('_autosearch_timer_cb')
+        self._autosearch_timer = None
+        self.search_entry.activate()
         return False
+
+    def clear_query(self):
+        self.search_entry.props.text = ''

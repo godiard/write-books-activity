@@ -18,6 +18,7 @@
 
 import os
 import time
+import logging
 from gettext import gettext as _
 
 from gi.repository import Gtk
@@ -35,14 +36,14 @@ from sugar3.graphics import style
 from sugar3.datastore import datastore
 
 from imagecanvas import ImageCanvas
-from objectchooser import ObjectChooser
-try:
-    from sugar3.graphics.objectchooser import FILTER_TYPE_GENERIC_MIME
-except:
-    FILTER_TYPE_GENERIC_MIME = 'generic_mime'
+from objectchooser import ImageFileChooser
 
 # TODO: get the real scratch path
-SCRATCH_PATH = '/home/gonzalo/sugar-devel/scratch/scratchonlinux/trunk/scratch'
+SCRATCH_PATH = '/home/olpc/Activities/Scratch.activity'
+if not os.path.exists(SCRATCH_PATH):
+    # this is only for development
+    SCRATCH_PATH = \
+        '/home/gonzalo/sugar-devel/scratch/scratchonlinux/trunk/scratch'
 SCRATCH_BACKGROUNDS_PATH = SCRATCH_PATH + '/Media/Backgrounds'
 
 
@@ -165,12 +166,8 @@ class WriteBooksActivity(activity.Activity):
         self.show_all()
 
     def __set_background_clicked_cb(self, button):
-
-        chooser = ObjectChooser(self, what_filter='Image',
-                                filter_type=FILTER_TYPE_GENERIC_MIME,
-                                show_preview=True,
-                                additional_path=SCRATCH_BACKGROUNDS_PATH,
-                                additional_path_label=_('Backgrounds'))
+        chooser = ImageFileChooser(path=SCRATCH_BACKGROUNDS_PATH,
+                                   title=_('Select a background'))
         chooser.connect('response', self.__set_backgroud_chooser_response_cb)
         chooser.show()
 

@@ -27,7 +27,7 @@ from gi.repository import GdkPixbuf
 
 from gettext import gettext as _
 
-from jarabe.journal import model
+from jarabelocal.journal import model
 from sugar3.graphics import style
 
 DS_DBUS_SERVICE = 'org.laptop.sugar.DataStore'
