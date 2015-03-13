@@ -75,12 +75,12 @@ class WriteBooksActivity(activity.Activity):
         insert_picture_button.set_tooltip(_('Add a picture'))
         toolbar_box.toolbar.insert(insert_picture_button, -1)
 
-        rotate_left_button = ToolButton('object-rotate-left')
-        rotate_left_button.set_tooltip(_('Rotate left'))
+        rotate_left_button = ToolButton('object_rotate_left')
+        rotate_left_button.set_tooltip(_('Rotate anticlockwise'))
         toolbar_box.toolbar.insert(rotate_left_button, -1)
 
-        rotate_right_button = ToolButton('object-rotate-right')
-        rotate_right_button.set_tooltip(_('Rotate right'))
+        rotate_right_button = ToolButton('object_rotate_right')
+        rotate_right_button.set_tooltip(_('Rotate clockwise'))
         toolbar_box.toolbar.insert(rotate_right_button, -1)
 
         mirror_horizontal_button = ToolButton('mirror-horizontal')
