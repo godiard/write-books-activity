@@ -91,6 +91,20 @@ class WriteBooksActivity(activity.Activity):
         mirror_vertical_button.set_tooltip(_('Vertical mirror'))
         toolbar_box.toolbar.insert(mirror_vertical_button, -1)
 
+        toolbar_box.toolbar.insert(Gtk.SeparatorToolItem(), -1)
+
+        add_page_button = ToolButton('list-add')
+        add_page_button.set_tooltip(_('Add a page'))
+        toolbar_box.toolbar.insert(add_page_button, -1)
+
+        prev_page_button = ToolButton('go-previous-paired')
+        prev_page_button.set_tooltip(_('Previous page'))
+        toolbar_box.toolbar.insert(prev_page_button, -1)
+
+        next_page_button = ToolButton('go-next-paired')
+        next_page_button.set_tooltip(_('Next page'))
+        toolbar_box.toolbar.insert(next_page_button, -1)
+
         separator = Gtk.SeparatorToolItem()
         separator.props.draw = False
         separator.set_expand(True)
@@ -114,52 +128,17 @@ class WriteBooksActivity(activity.Activity):
         self._page_counter_label.modify_font(font_desc)
         self._page_counter_label.set_halign(Gtk.Align.END)
         self._page_counter_label.set_valign(Gtk.Align.END)
-
-        self._add_page_btn = Gtk.Button()
-        self._add_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
-                                          icon_name='list-add'))
-        self._add_page_btn.set_valign(Gtk.Align.START)
-        self._add_page_btn.set_margin_top(style.DEFAULT_PADDING)
-        self._add_page_btn.set_margin_left(style.DEFAULT_PADDING)
-
-        self._prev_page_btn = Gtk.Button()
-        self._prev_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
-                                           icon_name='go-previous'))
-        self._prev_page_btn.set_valign(Gtk.Align.CENTER)
-        self._prev_page_btn.set_margin_right(style.DEFAULT_PADDING)
-
-        self._next_page_btn = Gtk.Button()
-        self._next_page_btn.set_image(Icon(pixel_size=style.LARGE_ICON_SIZE,
-                                           icon_name='go-next'))
-        self._next_page_btn.set_valign(Gtk.Align.CENTER)
-        self._next_page_btn.set_margin_left(style.DEFAULT_PADDING)
-
-        css_provider = Gtk.CssProvider()
-        css_provider.load_from_data(".button {background-color: #c0c0c0;}")
-        style_context = self._add_page_btn.get_style_context()
-        style_context.add_provider(css_provider,
-                                   Gtk.STYLE_PROVIDER_PRIORITY_USER)
-        style_context = self._prev_page_btn.get_style_context()
-        style_context.add_provider(css_provider,
-                                   Gtk.STYLE_PROVIDER_PRIORITY_USER)
-        style_context = self._next_page_btn.get_style_context()
-        style_context.add_provider(css_provider,
-                                   Gtk.STYLE_PROVIDER_PRIORITY_USER)
+        self._page_counter_label.set_margin_right(style.DEFAULT_PADDING)
+        self._page_counter_label.set_margin_top(style.DEFAULT_PADDING)
 
         background = Gtk.EventBox()
 
-        grid = Gtk.Grid()
-        grid.set_halign(Gtk.Align.CENTER)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        box.pack_start(self._page_counter_label, False, False, 0)
+        box.pack_start(self._image_canvas, True, True, 0)
+        box.pack_start(self._text_editor, False, False, style.DEFAULT_PADDING)
+        background.add(box)
 
-        grid.attach(self._image_canvas, 1, 0, 1, 3)
-        self._text_editor.set_vexpand(False)
-        grid.attach(self._text_editor, 1, 3, 1, 1)
-        grid.attach(self._page_counter_label, 2, 2, 1, 1)
-        grid.attach(self._prev_page_btn, 0, 1, 1, 1)
-        grid.attach(self._add_page_btn, 2, 0, 1, 1)
-        grid.attach(self._next_page_btn, 2, 1, 1, 1)
-
-        background.add(grid)
         self.set_canvas(background)
 
         self.show_all()
