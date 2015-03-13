@@ -33,6 +33,7 @@ class ImageCanvas(Gtk.DrawingArea):
         self._globo_activo = None
         """
 
+        self._request_size()
         self.connect('size_allocate', self.__size_allocate_cb)
         self.connect("draw", self.__draw_cb)
 
@@ -43,9 +44,10 @@ class ImageCanvas(Gtk.DrawingArea):
         self.connect("button_release_event", self.releassing)
         """
 
-        self.show_all()
-
     def __size_allocate_cb(self, WIDGET, allocation):
+        self._request_size()
+
+    def _request_size(self):
         self._height = Gdk.Screen.height() / 4 * 3
         self._width = self._height / 3 * 4
         self.set_size_request(self._width, self._height)
