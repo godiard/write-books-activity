@@ -35,8 +35,6 @@ _AUTOSEARCH_TIMEOUT = 1000
 
 class ImageFileChooser(Gtk.Window):
 
-    #__gtype_name__ = 'ObjectChooser'
-
     __gsignals__ = {
         'response': (GObject.SignalFlags.RUN_FIRST, None, ([int])),
     }
@@ -179,7 +177,7 @@ class SearchToolbox(ToolbarBox):
         self.search_entry = iconentry.IconEntry()
         try:
             self.search_entry.set_icon_from_name(iconentry.ICON_ENTRY_PRIMARY,
-                                                'entry-search')
+                                                 'entry-search')
         except:
             pass
 

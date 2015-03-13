@@ -21,99 +21,59 @@ from gettext import gettext as _
 from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import GLib
+from gi.repository import GdkPixbuf
 
 from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
 from jarabelocal.journal import model
+
+from iconmodel import IconModel
 
 try:
     from sugar3.activity.activity import PREVIEW_SIZE
 except:
     PREVIEW_SIZE = style.zoom(300), style.zoom(225)
 
-try:
-    from sugar3.graphics.objectchooser import get_preview_pixbuf
-except:
 
-    import StringIO
-    import cairo
-    from gi.repository import Gdk
+def get_preview_pixbuf(preview_path, width=-1, height=-1):
+    """Retrive a pixbuf with the content of the preview field
 
-    def get_preview_pixbuf(preview_data, width=-1, height=-1):
-        """Retrive a pixbuf with the content of the preview field
+    Keyword arguments:
+    preview_path -- the path to the image to show
+    width -- the pixbuf width, if is not set,
+             the default width will be used
+    height -- the pixbuf width, if is not set,
+              the default height will be used
 
-        Keyword arguments:
-        metadata -- the metadata dictionary.
-                    Can't be None, use metadata.get('preview', '')
-        width -- the pixbuf width, if is not set,
-                 the default width will be used
-        height -- the pixbuf width, if is not set,
-                  the default height will be used
+    Return: a Pixbuf or None if couldn't create it
 
-        Return: a Pixbuf or None if couldn't create it
+    """
+    if width == -1:
+        width = PREVIEW_SIZE[0]
 
-        """
-        if width == -1:
-            width = PREVIEW_SIZE[0]
+    if height == -1:
+        height = PREVIEW_SIZE[1]
 
-        if height == -1:
-            height = PREVIEW_SIZE[1]
-
-        pixbuf = None
-
-        if len(preview_data) > 4:
-            if preview_data[1:4] != 'PNG':
-                # TODO: We are close to be able to drop this.
-                import base64
-                preview_data = base64.b64decode(preview_data)
-
-            png_file = StringIO.StringIO(preview_data)
-            try:
-                # Load image and scale to dimensions
-                surface = cairo.ImageSurface.create_from_png(png_file)
-                png_width = surface.get_width()
-                png_height = surface.get_height()
-
-                preview_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32,
-                                                     width, height)
-                cr = cairo.Context(preview_surface)
-
-                scale_w = width * 1.0 / png_width
-                scale_h = height * 1.0 / png_height
-                scale = min(scale_w, scale_h)
-
-                cr.scale(scale, scale)
-
-                cr.set_source_rgba(1, 1, 1, 0)
-                cr.set_operator(cairo.OPERATOR_SOURCE)
-                cr.paint()
-                cr.set_source_surface(surface)
-                cr.paint()
-
-                pixbuf = Gdk.pixbuf_get_from_surface(preview_surface, 0, 0,
-                                                     width, height)
-            except Exception:
-                logging.exception('Error while loading the preview')
-
-        return pixbuf
-
-
-from sugar3.graphics import style
-
-from iconmodel import IconModel
+    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+        preview_path, width, height)
+    return pixbuf
 
 
 class PreviewRenderer(Gtk.CellRendererPixbuf):
 
     def __init__(self, **kwds):
         Gtk.CellRendererPixbuf.__init__(self, **kwds)
-        self._preview_data = None
+        self._preview_path = None
+        self.props.pixbuf = None
 
-    def set_preview_data(self, data):
-        self._preview_data = data
+    def set_preview_path(self, path):
+        if self._preview_path != path:
+            self._preview_path = path
+            self.props.pixbuf = None
 
     def do_render(self, cr, widget, background_area, cell_area, flags):
-        self.props.pixbuf = get_preview_pixbuf(self._preview_data)
+        if self.props.pixbuf is None:
+            self.props.pixbuf = get_preview_pixbuf(self._preview_path)
         Gtk.CellRendererPixbuf.do_render(self, cr, widget, background_area,
                                          cell_area, flags)
 
@@ -127,10 +87,10 @@ class PreviewRenderer(Gtk.CellRendererPixbuf):
 
 class PreviewIconView(Gtk.IconView):
 
-    def __init__(self, title_col, preview_col):
+    def __init__(self, title_col, preview_path_col):
         Gtk.IconView.__init__(self)
 
-        self._preview_col = preview_col
+        self._preview_path_col = preview_path_col
         self._title_col = title_col
 
         self.set_spacing(3)
@@ -148,8 +108,8 @@ class PreviewIconView(Gtk.IconView):
                                 self._title_data_func, None)
 
     def _preview_data_func(self, view, cell, store, i, data):
-        preview_data = store.get_value(i, self._preview_col)
-        cell.set_preview_data(preview_data)
+        preview_path = store.get_value(i, self._preview_path_col)
+        cell.set_preview_path(preview_path)
 
     def _title_data_func(self, view, cell, store, i, data):
         title = store.get_value(i, self._title_col)
@@ -186,7 +146,7 @@ class IconView(Gtk.Bin):
         self._scrolled_window.show()
 
         self.icon_view = PreviewIconView(IconModel.COLUMN_TITLE,
-                                         IconModel.COLUMN_PREVIEW)
+                                         IconModel.COLUMN_UID)
         self.icon_view.connect('item-activated', self.__item_activated_cb)
 
         self.icon_view.connect('button-release-event',
@@ -217,8 +177,8 @@ class IconView(Gtk.Bin):
         self.emit('entry-activated', uid)
 
     def _thumb_data_func(self, view, cell, store, i, data):
-        preview_data = store.get_value(i, IconModel.COLUMN_PREVIEW)
-        cell.props.pixbuf = get_preview_pixbuf(preview_data)
+        preview_path = store.get_value(i, IconModel.COLUMN_UID)
+        cell.props.pixbuf = get_preview_pixbuf(preview_path)
 
     def __model_created_cb(self, sender, signal, object_id):
         if self._is_new_item_visible(object_id):

@@ -18,7 +18,6 @@
 
 import os
 import time
-import logging
 from gettext import gettext as _
 
 from gi.repository import Gtk
