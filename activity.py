@@ -30,12 +30,12 @@ from sugar3.activity.widgets import EditToolbar
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
-from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
 from sugar3.datastore import datastore
 
 from imagecanvas import ImageCanvas
 from objectchooser import ImageFileChooser
+from bookmodel import BookModel
 
 # TODO: get the real scratch path
 SCRATCH_PATH = '/home/olpc/Activities/Scratch.activity'
@@ -93,17 +93,20 @@ class WriteBooksActivity(activity.Activity):
 
         toolbar_box.toolbar.insert(Gtk.SeparatorToolItem(), -1)
 
-        add_page_button = ToolButton('list-add')
-        add_page_button.set_tooltip(_('Add a page'))
-        toolbar_box.toolbar.insert(add_page_button, -1)
+        self._add_page_button = ToolButton('list-add')
+        self._add_page_button.set_tooltip(_('Add a page'))
+        self._add_page_button.connect('clicked', self.__add_page_clicked_cb)
+        toolbar_box.toolbar.insert(self._add_page_button, -1)
 
-        prev_page_button = ToolButton('go-previous-paired')
-        prev_page_button.set_tooltip(_('Previous page'))
-        toolbar_box.toolbar.insert(prev_page_button, -1)
+        self._prev_page_button = ToolButton('go-previous-paired')
+        self._prev_page_button.set_tooltip(_('Previous page'))
+        self._prev_page_button.connect('clicked', self.__prev_page_clicked_cb)
+        toolbar_box.toolbar.insert(self._prev_page_button, -1)
 
-        next_page_button = ToolButton('go-next-paired')
-        next_page_button.set_tooltip(_('Next page'))
-        toolbar_box.toolbar.insert(next_page_button, -1)
+        self._next_page_button = ToolButton('go-next-paired')
+        self._next_page_button.set_tooltip(_('Next page'))
+        self._next_page_button.connect('clicked', self.__next_page_clicked_cb)
+        toolbar_box.toolbar.insert(self._next_page_button, -1)
 
         separator = Gtk.SeparatorToolItem()
         separator.props.draw = False
@@ -123,7 +126,7 @@ class WriteBooksActivity(activity.Activity):
 
         self._text_editor = TextEditor()
 
-        self._page_counter_label = Gtk.Label('1/1')
+        self._page_counter_label = Gtk.Label('1 / 1')
         font_desc = Pango.font_description_from_string('12')
         self._page_counter_label.modify_font(font_desc)
         self._page_counter_label.set_halign(Gtk.Align.END)
@@ -142,6 +145,9 @@ class WriteBooksActivity(activity.Activity):
         self.set_canvas(background)
 
         self.show_all()
+        self._book_model = BookModel()
+        self._actual_page = 1
+        self._update_page_buttons()
 
     def __set_background_clicked_cb(self, button):
         chooser = ImageFileChooser(path=SCRATCH_BACKGROUNDS_PATH,
@@ -160,6 +166,25 @@ class WriteBooksActivity(activity.Activity):
                 self._image_canvas.set_background(tempfile_name)
         chooser.destroy()
         del chooser
+
+    def _update_page_buttons(self):
+        cant_pages = len(self._book_model.get_pages())
+        self._page_counter_label.set_text('%d / %d' %
+                                          (self._actual_page, cant_pages))
+        self._prev_page_button.set_sensitive(self._actual_page > 1)
+        self._next_page_button.set_sensitive(self._actual_page < cant_pages)
+
+    def __add_page_clicked_cb(self, button):
+        self._book_model.add_page()
+        self._update_page_buttons()
+
+    def __next_page_clicked_cb(self, button):
+        self._actual_page += 1
+        self._update_page_buttons()
+
+    def __prev_page_clicked_cb(self, button):
+        self._actual_page -= 1
+        self._update_page_buttons()
 
 
 class TextEditor(Gtk.TextView):
