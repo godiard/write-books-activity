@@ -52,6 +52,9 @@ class WriteBooksActivity(activity.Activity):
     def __init__(self, handle):
         activity.Activity.__init__(self, handle)
 
+        self._book_model = BookModel()
+        self._actual_page = 1
+
         # we do not have collaboration features
         # make the share option insensitive
         self.max_participants = 1
@@ -146,10 +149,15 @@ class WriteBooksActivity(activity.Activity):
         background.add(box)
 
         self.set_canvas(background)
+        self._update_page_buttons()
 
         self.show_all()
-        self._book_model = BookModel()
-        self._actual_page = 1
+
+    def write_file(self, file_path):
+        self._book_model.write(file_path)
+
+    def read_file(self, file_path):
+        self._book_model.read(file_path)
         self._update_page_buttons()
 
     def __set_background_clicked_cb(self, button):

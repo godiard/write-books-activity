@@ -1,4 +1,10 @@
 # the book model
+import logging
+import os
+import json
+import zipfile
+
+from sugar3.activity import activity
 
 
 class BookModel():
@@ -20,6 +26,92 @@ class BookModel():
 
     def set_page_text(self, page_number, text):
         self._pages[page_number - 1].text = text
+
+    def write(self, file_path):
+        instance_path = os.path.join(activity.get_activity_root(), 'instance')
+
+        book_data = {}
+        book_data['version'] = '1'
+
+        pages = []
+        for page in self._pages:
+            page_data = {}
+            page_data['text'] = page.text
+            page_data['background_path'] = page.background_path
+            page_data['images'] = []
+            for image in page.images:
+                image_data = {}
+                image_data['path'] = image.path
+                image_data['width'] = image.width
+                image_data['height'] = image.height
+                image_data['mirrored'] = image.mirrored
+                image_data['angle'] = image.angle
+                page_data['images'].append(image_data)
+            pages.append(page_data)
+        book_data['pages'] = pages
+        logging.debug('book_data %s', book_data)
+
+        data_file_name = 'data.json'
+        f = open(os.path.join(instance_path, data_file_name), 'w')
+        try:
+            json.dump(book_data, f)
+        finally:
+            f.close()
+
+        logging.debug('file_path %s', file_path)
+
+        z = zipfile.ZipFile(file_path, 'w')
+        z.write(os.path.join(instance_path, data_file_name), data_file_name)
+
+        # zip the iages
+        for page in self._pages:
+            if page.background_path is not None and \
+                    page.background_path != '':
+                z.write(page.background_path,
+                        os.path.basename(page.background_path))
+            for image in page.images:
+                if image.path is not None and image.path != '':
+                    z.write(image.path, os.path.basename(image.path))
+        z.close()
+
+    def read(self, file_path):
+        instance_path = os.path.join(activity.get_activity_root(), 'instance')
+        z = zipfile.ZipFile(file_path, 'r')
+        for file_path in z.namelist():
+            if (file_path != './'):
+                try:
+                    logging.debug('extracting %s', file_path)
+                    # la version de python en las xo no permite hacer
+                    # extract :(
+                    # z.extract(file_path,instance_path)
+                    data = z.read(file_path)
+                    fout = open(os.path.join(instance_path, file_path), 'w')
+                    fout.write(data)
+                    fout.close()
+                except:
+                    logging.error('Error extracting %s', file_path)
+        z.close()
+        data_file_path = 'data.json'
+
+        book_data = {}
+        with open(os.path.join(instance_path, data_file_path)) as f:
+            book_data = json.load(f)
+
+        self._pages = []
+        for page_data in book_data['pages']:
+            page = Page()
+            page.background_path = page_data['background_path']
+            page.text = page_data['text']
+            page.images = []
+            for image_data in page_data['images']:
+                image = Image()
+                image.path = image_data['path']
+                image.width = image_data['width']
+                image.height = image_data['height']
+                image.mirrored = image_data['mirrored']
+                image.angle = image_data['angle']
+                page.images.append(image)
+            self._pages.append(page)
 
 
 class Page():
