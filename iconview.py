@@ -29,10 +29,7 @@ from jarabelocal.journal import model
 
 from iconmodel import IconModel
 
-try:
-    from sugar3.activity.activity import PREVIEW_SIZE
-except:
-    PREVIEW_SIZE = style.zoom(300), style.zoom(225)
+PREVIEW_SIZE = style.zoom(300) / 2, style.zoom(225) / 2
 
 
 def get_preview_pixbuf(preview_path, width=-1, height=-1):
@@ -94,6 +91,8 @@ class PreviewIconView(Gtk.IconView):
         self._title_col = title_col
 
         self.set_spacing(3)
+        self.set_row_spacing(5)
+        self.set_column_spacing(3)
 
         _preview_renderer = PreviewRenderer()
         _preview_renderer.set_alignment(0.5, 0.5)
@@ -113,6 +112,8 @@ class PreviewIconView(Gtk.IconView):
 
     def _title_data_func(self, view, cell, store, i, data):
         title = store.get_value(i, self._title_col)
+        if title.find('.') > -1:
+            title = title[0:title.find('.')]
         cell.props.markup = title
 
 
@@ -297,6 +298,7 @@ class IconView(Gtk.Bin):
             return
         self.remove(self.get_child())
         self.add(self._scrolled_window)
+
         self._progress_bar = None
 
     def _show_message(self, message, show_clear_query=False):
