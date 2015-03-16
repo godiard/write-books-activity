@@ -21,6 +21,7 @@ import time
 from gettext import gettext as _
 
 from gi.repository import Gtk
+from gi.repository import GObject
 from gi.repository import Pango
 
 from sugar3.activity import activity
@@ -125,6 +126,8 @@ class WriteBooksActivity(activity.Activity):
         self._image_canvas.set_vexpand(True)
 
         self._text_editor = TextEditor()
+        self._text_changed_signal_id = self._text_editor.connect(
+            'changed', self.__text_changed_cb)
 
         self._page_counter_label = Gtk.Label('1 / 1')
         font_desc = Pango.font_description_from_string('12')
@@ -180,6 +183,11 @@ class WriteBooksActivity(activity.Activity):
     def _update_page(self):
         page_model = self._book_model.get_page_model(self._actual_page)
         self._image_canvas.set_background(page_model.background_path)
+        GObject.signal_handler_block(
+            self._text_editor, self._text_changed_signal_id)
+        self._text_editor.set_text(page_model.text)
+        GObject.signal_handler_unblock(
+            self._text_editor, self._text_changed_signal_id)
 
     def __add_page_clicked_cb(self, button):
         self._book_model.add_page()
@@ -193,8 +201,16 @@ class WriteBooksActivity(activity.Activity):
         self._actual_page -= 1
         self._update_page_buttons()
 
+    def __text_changed_cb(self, texteditor):
+        self._book_model.set_page_text(self._actual_page,
+                                       texteditor.get_text())
+
 
 class TextEditor(Gtk.TextView):
+
+    __gsignals__ = {
+        'changed': (GObject.SignalFlags.RUN_FIRST, None, ([])),
+    }
 
     def __init__(self):
         Gtk.TextView.__init__(self)
@@ -208,3 +224,15 @@ class TextEditor(Gtk.TextView):
 
         font_desc = Pango.font_description_from_string('14')
         self.modify_font(font_desc)
+        self.get_buffer().connect('changed', self.__buffer_changed_cb)
+
+    def __buffer_changed_cb(self, text_buffer):
+        self.emit('changed')
+
+    def get_text(self):
+        return self.get_buffer().get_text(self.get_buffer().get_start_iter(),
+                                          self.get_buffer().get_end_iter(),
+                                          False)
+
+    def set_text(self, text):
+        self.get_buffer().set_text(text)

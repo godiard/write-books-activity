@@ -18,6 +18,9 @@ class BookModel():
     def set_page_background(self, page_number, path):
         self._pages[page_number - 1].background_path = path
 
+    def set_page_text(self, page_number, text):
+        self._pages[page_number - 1].text = text
+
 
 class Page():
 
