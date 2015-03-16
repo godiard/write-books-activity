@@ -164,6 +164,8 @@ class WriteBooksActivity(activity.Activity):
                                  'instance', 'tmp%i' % time.time())
                 os.link(jobject.file_path, tempfile_name)
                 self._image_canvas.set_background(tempfile_name)
+                self._book_model.set_page_background(self._actual_page,
+                                                     tempfile_name)
         chooser.destroy()
         del chooser
 
@@ -173,6 +175,11 @@ class WriteBooksActivity(activity.Activity):
                                           (self._actual_page, cant_pages))
         self._prev_page_button.set_sensitive(self._actual_page > 1)
         self._next_page_button.set_sensitive(self._actual_page < cant_pages)
+        self._update_page()
+
+    def _update_page(self):
+        page_model = self._book_model.get_page_model(self._actual_page)
+        self._image_canvas.set_background(page_model.background_path)
 
     def __add_page_clicked_cb(self, button):
         self._book_model.add_page()
