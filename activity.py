@@ -191,11 +191,10 @@ class WriteBooksActivity(activity.Activity):
     def _update_page(self):
         page_model = self._book_model.get_page_model(self._actual_page)
         self._image_canvas.set_background(page_model.background_path)
-        GObject.signal_handler_block(
-            self._text_editor, self._text_changed_signal_id)
+        self._text_editor.disconnect(self._text_changed_signal_id)
         self._text_editor.set_text(page_model.text)
-        GObject.signal_handler_unblock(
-            self._text_editor, self._text_changed_signal_id)
+        self._text_changed_signal_id = self._text_editor.connect(
+            'changed', self.__text_changed_cb)
 
     def __add_page_clicked_cb(self, button):
         self._book_model.add_page()
