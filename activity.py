@@ -36,7 +36,7 @@ from sugar3.graphics import style
 from sugar3.datastore import datastore
 
 from imagecanvas import ImageCanvas
-from objectchooser import ImageFileChooser
+from imagechooser import ImageFileChooser
 from bookmodel import BookModel
 
 # TODO: get the real scratch path
