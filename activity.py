@@ -84,22 +84,6 @@ class WriteBooksActivity(activity.Activity):
         insert_picture_button.set_tooltip(_('Add a picture'))
         toolbar_box.toolbar.insert(insert_picture_button, -1)
 
-        rotate_left_button = ToolButton('object_rotate_left')
-        rotate_left_button.set_tooltip(_('Rotate anticlockwise'))
-        toolbar_box.toolbar.insert(rotate_left_button, -1)
-
-        rotate_right_button = ToolButton('object_rotate_right')
-        rotate_right_button.set_tooltip(_('Rotate clockwise'))
-        toolbar_box.toolbar.insert(rotate_right_button, -1)
-
-        mirror_horizontal_button = ToolButton('mirror-horizontal')
-        mirror_horizontal_button.set_tooltip(_('Horizontal mirror'))
-        toolbar_box.toolbar.insert(mirror_horizontal_button, -1)
-
-        mirror_vertical_button = ToolButton('mirror-vertical')
-        mirror_vertical_button.set_tooltip(_('Vertical mirror'))
-        toolbar_box.toolbar.insert(mirror_vertical_button, -1)
-
         toolbar_box.toolbar.insert(Gtk.SeparatorToolItem(), -1)
 
         self._add_page_button = ToolButton('list-add')
