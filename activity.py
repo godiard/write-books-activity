@@ -19,6 +19,7 @@
 import os
 import time
 from gettext import gettext as _
+import logging
 
 from gi.repository import Gtk
 from gi.repository import GObject
@@ -175,15 +176,15 @@ class WriteBooksActivity(activity.Activity):
 
     def __set_backgroud_chooser_response_cb(self, chooser, response_id):
         if response_id == Gtk.ResponseType.ACCEPT:
-            jobject = datastore.get(chooser.get_selected_object_id())
-            if jobject and jobject.file_path:
-                tempfile_name = \
-                    os.path.join(self.get_activity_root(),
-                                 'instance', 'tmp%i' % time.time())
-                os.link(jobject.file_path, tempfile_name)
-                self._image_canvas.set_background(tempfile_name)
-                self._book_model.set_page_background(self._actual_page,
-                                                     tempfile_name)
+            logging.error('selected %s', chooser.get_selected_object_id())
+            file_path = chooser.get_selected_object_id()
+            tempfile_name = \
+                os.path.join(self.get_activity_root(),
+                             'instance', 'tmp%i' % time.time())
+            os.link(file_path, tempfile_name)
+            self._image_canvas.set_background(tempfile_name)
+            self._book_model.set_page_background(self._actual_page,
+                                                 tempfile_name)
         chooser.destroy()
         del chooser
 
