@@ -33,7 +33,11 @@ from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics import style
-from sugar3.datastore import datastore
+from sugar3.graphics.objectchooser import ObjectChooser
+try:
+    from sugar3.graphics.objectchooser import FILTER_TYPE_GENERIC_MIME
+except:
+    FILTER_TYPE_GENERIC_MIME = 'generic_mime'
 
 from imagecanvas import ImageCanvas
 from imagechooser import ImageFileChooser
@@ -187,6 +191,34 @@ class WriteBooksActivity(activity.Activity):
                                                  tempfile_name)
         chooser.destroy()
         del chooser
+        if response_id == Gtk.ResponseType.REJECT:
+            try:
+                chooser = ObjectChooser(self, what_filter='Image',
+                                        filter_type=FILTER_TYPE_GENERIC_MIME,
+                                        show_preview=True)
+            except:
+                # for compatibility with older versions
+                chooser = ObjectChooser(self, what_filter='Image')
+
+            try:
+                result = chooser.run()
+                if result == Gtk.ResponseType.ACCEPT:
+                    logging.error('ObjectChooser: %r' %
+                                  chooser.get_selected_object())
+                    jobject = chooser.get_selected_object()
+                    if jobject and jobject.file_path:
+                        logging.error("imagen seleccionada: %s",
+                                      jobject.file_path)
+                        tempfile_name = \
+                            os.path.join(self.get_activity_root(),
+                                         'instance', 'tmp%i' % time.time())
+                        os.link(jobject.file_path, tempfile_name)
+                        self._image_canvas.set_background(tempfile_name)
+                        self._book_model.set_page_background(self._actual_page,
+                                                             tempfile_name)
+            finally:
+                chooser.destroy()
+                del chooser
 
     def _update_page_buttons(self):
         cant_pages = len(self._book_model.get_pages())

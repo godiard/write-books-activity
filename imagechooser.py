@@ -82,6 +82,8 @@ class ImageFileChooser(Gtk.Window):
         title_box.set_size_request(-1, style.GRID_CELL_SIZE)
         self._vbox.pack_start(title_box, False, True, 0)
         title_box.show()
+        title_box.journal_button.connect('clicked',
+                                         self.__journal_button_clicked_cb)
 
         separator = Gtk.HSeparator()
         self._vbox.pack_start(separator, False, True, 0)
@@ -150,6 +152,10 @@ class ImageFileChooser(Gtk.Window):
     def __window_closed_cb(self, screen, window, parent):
         if window.get_xid() == parent.get_xid():
             self.destroy()
+
+    def __journal_button_clicked_cb(self, button):
+        # use reject to signal open the objectchooser
+        self.emit('response', Gtk.ResponseType.REJECT)
 
     def __entry_activated_cb(self, list_view, uid):
         self._selected_object_id = uid
