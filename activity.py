@@ -238,6 +238,7 @@ class WriteBooksActivity(activity.Activity):
 
     def __add_page_clicked_cb(self, button):
         self._book_model.add_page()
+        self._actual_page = len(self._book_model.get_pages())
         self._update_page_buttons()
 
     def __next_page_clicked_cb(self, button):
