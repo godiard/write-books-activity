@@ -161,8 +161,15 @@ class WriteBooksActivity(activity.Activity):
         self._update_page_buttons()
 
     def __set_background_clicked_cb(self, button):
+        categories = {
+            _('Indoors'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Indoors'),
+            _('Nature'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Nature'),
+            _('Outdoors'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Outdoors'),
+            _('Sports'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Sports')}
+
         chooser = ImageFileChooser(path=SCRATCH_BACKGROUNDS_PATH,
-                                   title=_('Select a background'))
+                                   title=_('Select a background'),
+                                   categories=categories)
         chooser.connect('response', self.__set_backgroud_chooser_response_cb)
         chooser.show()
 

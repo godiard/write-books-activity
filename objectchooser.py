@@ -25,8 +25,10 @@ from gi.repository import Wnck
 from sugar3.graphics import style
 from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics.toolbarbox import ToolbarBox
+from sugar3.graphics.icon import Icon
 from sugar3.graphics import iconentry
 from sugar3 import mime
+from sugar3 import profile
 
 from iconview import IconView
 
@@ -39,7 +41,14 @@ class ImageFileChooser(Gtk.Window):
         'response': (GObject.SignalFlags.RUN_FIRST, None, ([int])),
     }
 
-    def __init__(self, path, title=None, parent=None):
+    def __init__(self, path, title=None, parent=None, categories=None):
+        """
+            path (str) -- The path with the images to display
+            title (str) -- A optional string to display in the main toolbar
+            parent -- the widget calling ObjectChooser
+            categories (dict) -- A dictionary with categories and path
+                associated.
+        """
         Gtk.Window.__init__(self)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.set_decorated(False)
@@ -63,38 +72,76 @@ class ImageFileChooser(Gtk.Window):
             screen = Wnck.Screen.get_default()
             screen.connect('window-closed', self.__window_closed_cb, parent)
 
-        vbox = Gtk.VBox()
-        self.add(vbox)
-        vbox.show()
+        self._vbox = Gtk.VBox()
+        self.add(self._vbox)
+        self._vbox.show()
 
         title_box = TitleBox(title)
         title_box.close_button.connect('clicked',
                                        self.__close_button_clicked_cb)
         title_box.set_size_request(-1, style.GRID_CELL_SIZE)
-        vbox.pack_start(title_box, False, True, 0)
+        self._vbox.pack_start(title_box, False, True, 0)
         title_box.show()
 
         separator = Gtk.HSeparator()
-        vbox.pack_start(separator, False, True, 0)
+        self._vbox.pack_start(separator, False, True, 0)
         separator.show()
 
-        self._toolbar = SearchToolbox(path)
+        self._toolbar = SearchToolbox(path, add_back_button=True)
         self._toolbar.connect('query-changed', self.__query_changed_cb)
+        self._toolbar.connect('go-back', self.__go_back_cb)
         self._toolbar.set_size_request(-1, style.GRID_CELL_SIZE)
-        vbox.pack_start(self._toolbar, False, True, 0)
-        self._toolbar.show()
-
-        self._icon_view = IconView(self._toolbar)
-        self._icon_view.connect('entry-activated',
-                                self.__entry_activated_cb)
-        self._icon_view.connect('clear-clicked', self.__clear_clicked_cb)
-        vbox.pack_start(self._icon_view, True, True, 0)
-        self._icon_view.show()
+        self._vbox.pack_start(self._toolbar, False, True, 0)
 
         width = Gdk.Screen.width() - style.GRID_CELL_SIZE * 2
         height = Gdk.Screen.height() - style.GRID_CELL_SIZE * 2
         self.set_size_request(width, height)
+
+        self._icon_view = None
+        self._buttons_vbox = None
+        self._categories = categories
+        if categories is None:
+            self.show_icon_view(path)
+        else:
+            self.show_categories_buttons()
+
+    def show_categories_buttons(self):
+        if self._icon_view is not None:
+            self._vbox.remove(self._icon_view)
+            self._icon_view = None
+        if self._buttons_vbox is not None:
+            self._vbox.remove(self._buttons_vbox)
+
+        # if categories are defined, show a list of buttons
+        # with the categories, when the user press a button,
+        # load the images in the catgories patch
+        self._buttons_vbox = Gtk.VBox()
+        for category in self._categories.keys():
+            button = Gtk.Button(category)
+            button.connect('clicked', self.__category_btn_clicked_cb,
+                           self._categories[category])
+            self._buttons_vbox.pack_start(button, False, False, 10)
+        self._buttons_vbox.show_all()
+        self._vbox.pack_start(self._buttons_vbox, True, True, 0)
+        self._toolbar.hide()
+
+    def __category_btn_clicked_cb(self, button, category_path):
+        self.show_icon_view(category_path)
+
+    def show_icon_view(self, path):
+        self._vbox.remove(self._buttons_vbox)
+        self._toolbar.set_path(path)
+        self._icon_view = IconView(self._toolbar)
+        self._icon_view.connect('entry-activated',
+                                self.__entry_activated_cb)
+        self._icon_view.connect('clear-clicked', self.__clear_clicked_cb)
+        self._vbox.pack_start(self._icon_view, True, True, 0)
+        self._icon_view.show()
         self._icon_view.update_with_query(self._toolbar.get_query())
+        self._toolbar.show()
+
+    def __go_back_cb(self, toolbar):
+        self.show_categories_buttons()
 
     def __realize_cb(self, chooser, parent):
         self.get_window().set_transient_for(parent)
@@ -142,11 +189,20 @@ class TitleBox(Gtk.Toolbar):
 
     def __init__(self, title=None):
         Gtk.Toolbar.__init__(self)
+
+        self.journal_button = ToolButton()
+        icon = Icon(icon_name='activity-journal', xo_color=profile.get_color())
+        self.journal_button.set_icon_widget(icon)
+        self.journal_button.set_tooltip(_('Select from the Journal'))
+        self.insert(self.journal_button, -1)
+        self.journal_button.show_all()
+
         label = Gtk.Label()
         if title is None:
             title = _('Choose an image')
         label.set_markup('<b>%s</b>' % title)
         label.set_alignment(0, 0.5)
+        label.set_margin_left(10)
         self._add_widget(label, expand=True)
 
         self.close_button = ToolButton(icon_name='dialog-cancel')
@@ -169,9 +225,10 @@ class SearchToolbox(ToolbarBox):
 
     __gsignals__ = {
         'query-changed': (GObject.SignalFlags.RUN_FIRST, None, ([object])),
+        'go-back': (GObject.SignalFlags.RUN_FIRST, None, ([])),
     }
 
-    def __init__(self, path):
+    def __init__(self, path, add_back_button=False):
         ToolbarBox.__init__(self)
         self._path = path
         self.search_entry = iconentry.IconEntry()
@@ -189,7 +246,17 @@ class SearchToolbox(ToolbarBox):
         self._autosearch_timer = None
         self._add_widget(self.search_entry, expand=True)
 
+        if add_back_button:
+            back_button = ToolButton(icon_name='go-previous')
+            back_button.set_tooltip(_('Back'))
+            self._add_widget(back_button, expand=False)
+            back_button.connect('clicked', self.__back_button_clicked_cb)
+            back_button.show()
+
         self._query = self._build_query()
+
+    def __back_button_clicked_cb(self, button):
+        self.emit('go-back')
 
     def _add_widget(self, widget, expand=False):
         tool_item = Gtk.ToolItem()
@@ -203,6 +270,11 @@ class SearchToolbox(ToolbarBox):
 
     def get_query(self):
         return self._query
+
+    def set_path(self, path):
+        self._path = path
+        self._query = self._build_query()
+        self._update_if_needed()
 
     def _build_query(self):
         query = {}
