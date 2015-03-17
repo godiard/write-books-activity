@@ -57,6 +57,18 @@ class ImageCanvas(Gtk.DrawingArea):
         self._background = None
         self.queue_draw()
 
+    def set_images(self, image_models):
+        self._images = []
+        for image_model in image_models:
+            image_view = ImageView(
+                image_model.path, image_model.width, image_model.height,
+                self._width, self._height)
+            image_view.x = image_model.x
+            image_view.y = image_model.y
+            image_view.mirrored = image_model.mirrored
+            image_view.angle = image_model.angle
+            self._images.append(image_view)
+
     """
     def set_globo_activo(self, globo):
         if self._globo_activo is not None and self._globo_activo != globo:
@@ -101,6 +113,11 @@ class ImageCanvas(Gtk.DrawingArea):
             ctx.fill()
         else:
             Gdk.cairo_set_source_pixbuf(ctx, self._background, 0, 0)
+            ctx.paint()
+
+        for image_view in self._images:
+            Gdk.cairo_set_source_pixbuf(ctx, image_view.pixbuf, 0, 0)
+            ctx.translate(*image_view.get_coordinates())
             ctx.paint()
 
         # Draw the border
@@ -183,3 +200,27 @@ class ImageCanvas(Gtk.DrawingArea):
                                        self.get_allocation())
             self.redraw()
     """
+
+
+class ImageView():
+
+    def __init__(self, path, width, height, canvas_width, canvas_height):
+        self.path = path
+        self._canvas_width = canvas_width
+        self._canvas_height = canvas_height
+        # the size is stored as a percentage of the background image
+        self.x = 0
+        self.y = 0
+        self._width = width
+        self._height = height
+        # store the pixbuf scaled
+        self.pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            self.path,
+            canvas_width * self._width / 100.,
+            canvas_height * self._height / 100.)
+        self.mirrored = False
+        self.angle = 0
+
+    def get_coordinates(self):
+        return (self._canvas_width * self.x / 100.,
+                self._canvas_height * self.y / 100.)

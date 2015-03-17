@@ -207,7 +207,7 @@ class WriteBooksActivity(activity.Activity):
 
     def _change_background(self, file_name):
         self._book_model.set_page_background(self._actual_page, file_name)
-        self._update_page()
+        self._update_page_view()
 
     def __add_image_clicked_cb(self, button):
         categories = {
@@ -228,6 +228,8 @@ class WriteBooksActivity(activity.Activity):
 
     def _add_image(self, file_name):
         logging.error('Add image %s', file_name)
+        self._book_model.add_image(self._actual_page, file_name)
+        self._update_page_view()
 
     def _update_page_buttons(self):
         cant_pages = len(self._book_model.get_pages())
@@ -235,11 +237,12 @@ class WriteBooksActivity(activity.Activity):
                                           (self._actual_page, cant_pages))
         self._prev_page_button.set_sensitive(self._actual_page > 1)
         self._next_page_button.set_sensitive(self._actual_page < cant_pages)
-        self._update_page()
+        self._update_page_view()
 
-    def _update_page(self):
+    def _update_page_view(self):
         page_model = self._book_model.get_page_model(self._actual_page)
         self._image_canvas.set_background(page_model.background_path)
+        self._image_canvas.set_images(page_model.images)
         self._text_editor.disconnect(self._text_changed_signal_id)
         self._text_editor.set_text(page_model.text)
         self._text_changed_signal_id = self._text_editor.connect(

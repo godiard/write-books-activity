@@ -27,6 +27,12 @@ class BookModel():
     def set_page_text(self, page_number, text):
         self._pages[page_number - 1].text = text
 
+    def add_image(self, page_number, path):
+        page = self._pages[page_number - 1]
+        image = Image()
+        image.path = path
+        page.images.append(image)
+
     def write(self, file_path):
         instance_path = os.path.join(activity.get_activity_root(), 'instance')
 
@@ -41,6 +47,8 @@ class BookModel():
             page_data['images'] = []
             for image in page.images:
                 image_data = {}
+                image_data['x'] = image.x
+                image_data['y'] = image.y
                 image_data['path'] = image.path
                 image_data['width'] = image.width
                 image_data['height'] = image.height
@@ -106,6 +114,8 @@ class BookModel():
             for image_data in page_data['images']:
                 image = Image()
                 image.path = image_data['path']
+                image.x = image_data['x']
+                image.y = image_data['y']
                 image.width = image_data['width']
                 image.height = image_data['height']
                 image.mirrored = image_data['mirrored']
@@ -126,8 +136,10 @@ class Image():
 
     def __init__(self):
         self.path = None
-        # the size is stored as a percentage of the background image
-        self.width = 100
-        self.height = 100
+        # the size and position is stored as a percentage of the background
+        self.x = 0
+        self.y = 0
+        self.width = 30
+        self.height = 30
         self.mirrored = False
         self.angle = 0
