@@ -51,6 +51,8 @@ if not os.path.exists(SCRATCH_PATH):
         '/home/gonzalo/sugar-devel/scratch/scratchonlinux/trunk/scratch'
 SCRATCH_BACKGROUNDS_PATH = SCRATCH_PATH + '/Media/Backgrounds'
 
+SCRATCH_COSTUMES_PATH = SCRATCH_PATH + '/Media/Costumes'
+
 
 class WriteBooksActivity(activity.Activity):
 
@@ -82,6 +84,8 @@ class WriteBooksActivity(activity.Activity):
 
         insert_picture_button = ToolButton('insert-picture')
         insert_picture_button.set_tooltip(_('Add a picture'))
+        insert_picture_button.connect('clicked',
+                                      self.__add_image_clicked_cb)
         toolbar_box.toolbar.insert(insert_picture_button, -1)
 
         toolbar_box.toolbar.insert(Gtk.SeparatorToolItem(), -1)
@@ -159,10 +163,11 @@ class WriteBooksActivity(activity.Activity):
         chooser = ImageFileChooser(path=SCRATCH_BACKGROUNDS_PATH,
                                    title=_('Select a background'),
                                    categories=categories)
-        chooser.connect('response', self.__set_backgroud_chooser_response_cb)
+        chooser.connect('response', self.__chooser_response_cb,
+                        self._change_background)
         chooser.show()
 
-    def __set_backgroud_chooser_response_cb(self, chooser, response_id):
+    def __chooser_response_cb(self, chooser, response_id, operation_function):
         if response_id == Gtk.ResponseType.ACCEPT:
             logging.error('selected %s', chooser.get_selected_object_id())
             file_path = chooser.get_selected_object_id()
@@ -170,9 +175,7 @@ class WriteBooksActivity(activity.Activity):
                 os.path.join(self.get_activity_root(),
                              'instance', 'tmp%i' % time.time())
             os.link(file_path, tempfile_name)
-            self._image_canvas.set_background(tempfile_name)
-            self._book_model.set_page_background(self._actual_page,
-                                                 tempfile_name)
+            operation_function(tempfile_name)
         chooser.destroy()
         del chooser
         if response_id == Gtk.ResponseType.REJECT:
@@ -197,12 +200,34 @@ class WriteBooksActivity(activity.Activity):
                             os.path.join(self.get_activity_root(),
                                          'instance', 'tmp%i' % time.time())
                         os.link(jobject.file_path, tempfile_name)
-                        self._image_canvas.set_background(tempfile_name)
-                        self._book_model.set_page_background(self._actual_page,
-                                                             tempfile_name)
+                        operation_function(tempfile_name)
             finally:
                 chooser.destroy()
                 del chooser
+
+    def _change_background(self, file_name):
+        self._book_model.set_page_background(self._actual_page, file_name)
+        self._update_page()
+
+    def __add_image_clicked_cb(self, button):
+        categories = {
+            _('Animals'): os.path.join(SCRATCH_COSTUMES_PATH, 'Animals'),
+            _('Fantasy'): os.path.join(SCRATCH_COSTUMES_PATH, 'Fantasy'),
+            _('Letters'): os.path.join(SCRATCH_COSTUMES_PATH, 'Letters'),
+            _('People'): os.path.join(SCRATCH_COSTUMES_PATH, 'People'),
+            _('Things'): os.path.join(SCRATCH_COSTUMES_PATH, 'Things'),
+            _('Transportation'): os.path.join(SCRATCH_COSTUMES_PATH,
+                                              'Transportation')}
+
+        chooser = ImageFileChooser(path=SCRATCH_COSTUMES_PATH,
+                                   title=_('Select a image to add'),
+                                   categories=categories)
+        chooser.connect('response', self.__chooser_response_cb,
+                        self._add_image)
+        chooser.show()
+
+    def _add_image(self, file_name):
+        logging.error('Add image %s', file_name)
 
     def _update_page_buttons(self):
         cant_pages = len(self._book_model.get_pages())
