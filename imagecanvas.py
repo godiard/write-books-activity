@@ -9,7 +9,7 @@ from gi.repository import GdkPixbuf
 from sugar3.graphics import style
 
 WIDTH_CONTROL_LINES = 2
-SIZE_RESIZE_AREA = style.GRID_CELL_SIZE / 2
+CONTROL_SIZE = style.GRID_CELL_SIZE / 2
 
 
 class ImageCanvas(Gtk.DrawingArea):
@@ -43,9 +43,15 @@ class ImageCanvas(Gtk.DrawingArea):
         self.connect("motion_notify_event", self.__motion_cb)
         self.connect("button_release_event", self.__button_release_cb)
 
-        """
-        self.connect("motion_notify_event", self.mouse_move)
-        """
+        # load pixbufs for controls
+        self._rotate_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            './icons/object_rotate_right.svg', CONTROL_SIZE, CONTROL_SIZE)
+        self._mirror_h_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            './icons/mirror-horizontal.svg', CONTROL_SIZE, CONTROL_SIZE)
+        self._mirror_v_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            './icons/mirror-vertical.svg', CONTROL_SIZE, CONTROL_SIZE)
+        self._resize_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            './icons/resize.svg', CONTROL_SIZE, CONTROL_SIZE)
 
     def __size_allocate_cb(self, WIDGET, allocation):
         self._request_size()
@@ -111,25 +117,25 @@ class ImageCanvas(Gtk.DrawingArea):
                 ctx.translate(x_ini, y_ini)
                 ctx.set_line_width(WIDTH_CONTROL_LINES)
                 # draw a line around the image
-                ctx.move_to(SIZE_RESIZE_AREA / 2, 0)
-                ctx.line_to(width, 0)
-                ctx.line_to(width, height)
-                ctx.line_to(0, height)
-                ctx.line_to(0, SIZE_RESIZE_AREA / 2)
+                ctx.rectangle(0, 0, width, height)
                 ctx.set_source_rgb(1, 1, 1)
                 ctx.stroke_preserve()
                 ctx.set_dash([4, 4])
                 ctx.set_source_rgb(0, 0, 0)
                 ctx.stroke()
-                # draw the resize corner
-                ctx.rectangle(-SIZE_RESIZE_AREA / 2, -SIZE_RESIZE_AREA / 2,
-                              SIZE_RESIZE_AREA, SIZE_RESIZE_AREA)
-                ctx.set_dash([])
-                ctx.set_source_rgb(1, 1, 1)
-                ctx.stroke_preserve()
-                ctx.set_dash([4, 4])
-                ctx.set_source_rgb(0, 0, 0)
-                ctx.stroke()
+                # draw the rotate corner
+                self._draw_control(ctx, -CONTROL_SIZE / 2, -CONTROL_SIZE / 2,
+                                   self._rotate_pixbuf)
+                # draw the horizontal mirror
+                self._draw_control(ctx, width - CONTROL_SIZE / 2,
+                                   -CONTROL_SIZE / 2,
+                                   self._mirror_h_pixbuf)
+                self._draw_control(ctx, -CONTROL_SIZE / 2,
+                                   height - CONTROL_SIZE / 2,
+                                   self._mirror_v_pixbuf)
+                self._draw_control(ctx, width - CONTROL_SIZE / 2,
+                                   height - CONTROL_SIZE / 2,
+                                   self._resize_pixbuf)
                 ctx.restore()
 
         # Draw the border
@@ -138,6 +144,16 @@ class ImageCanvas(Gtk.DrawingArea):
         ctx.rectangle(0, 0, self._width, self._height)
         ctx.set_source_rgb(0, 0, 0)
         ctx.stroke()
+        ctx.restore()
+
+    def _draw_control(self, ctx, x, y, pixbuf):
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.rectangle(0, 0, CONTROL_SIZE, CONTROL_SIZE)
+        ctx.set_source_rgb(0, 0, 0)
+        ctx.fill()
+        Gdk.cairo_set_source_pixbuf(ctx, pixbuf, 0, 0)
+        ctx.paint()
         ctx.restore()
 
     def __button_press_cb(self, widget, event):
@@ -235,10 +251,13 @@ class ImageView():
                 self._canvas_height * self.height / 100.)
 
     def is_in_size_area(self, x, y):
-        resize = SIZE_RESIZE_AREA / 2
-        x_ini, y_ini = self.get_coordinates()
-        if x_ini - resize < x < x_ini + resize \
-                and y_ini - resize < y < y_ini + resize:
+        resize = CONTROL_SIZE / 2
+        x_btn, y_btn = self.get_coordinates()
+        width, height = self.get_size()
+        x_btn = x_btn + width
+        y_btn = y_btn + height
+        if x_btn - resize < x < x_btn + resize \
+                and y_btn - resize < y < y_btn + resize:
             self._resize_from_x, self._resize_from_y = x, y
             self._resize_width, self._resize_heigth = self.get_size()
             return True
@@ -266,12 +285,9 @@ class ImageView():
         delta_x, delta_y = x - self._resize_from_x, y - self._resize_from_y
         # set a minimal size
         width_new = max(style.GRID_CELL_SIZE,
-                        self._resize_width - delta_x * 2)
+                        self._resize_width + delta_x)
         height_new = max(style.GRID_CELL_SIZE,
-                         self._resize_heigth - delta_y * 2)
+                         self._resize_heigth + delta_y)
         # set as percentage
         self.width = width_new * 100. / self._canvas_width
         self.height = height_new * 100. / self._canvas_height
-        # set as percentage
-        self.x = x * 100. / self._canvas_width
-        self.y = y * 100. / self._canvas_height
