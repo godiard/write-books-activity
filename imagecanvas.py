@@ -1,10 +1,15 @@
 # Copyright 2015 Gonzalo Odiard
 #
+import cairo
 
 from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GdkPixbuf
+from sugar3.graphics import style
+
+WIDTH_CONTROL_LINES = 2
+SIZE_RESIZE_AREA = style.GRID_CELL_SIZE / 2
 
 
 class ImageCanvas(Gtk.DrawingArea):
@@ -27,16 +32,8 @@ class ImageCanvas(Gtk.DrawingArea):
         self._images = []
         self._active_image = None
         self._press_on_image = False
+        self._press_on_resize = False
         self._modified = False
-
-        """
-        self.is_dimension = False
-        self.image_name = ''
-        self.image = None
-        self.image_saved = False
-        self.title_globe = None
-        self.thumbnail = None
-        """
 
         self._request_size()
         self.connect('size_allocate', self.__size_allocate_cb)
@@ -96,20 +93,37 @@ class ImageCanvas(Gtk.DrawingArea):
             ctx.paint()
 
         for image_view in self._images:
+            x_ini, y_ini = image_view.get_coordinates()
+            width, height = image_view.get_size()
             ctx.save()
-            ctx.translate(*image_view.get_coordinates())
+            ctx.translate(x_ini, y_ini)
+            scale_x = width / image_view.pixbuf.get_width() * 1.0
+            scale_y = height / image_view.pixbuf.get_height() * 1.0
+            ctx.scale(scale_x, scale_y)
             Gdk.cairo_set_source_pixbuf(ctx, image_view.pixbuf, 0, 0)
+            if self._press_on_resize:
+                ctx.get_source().set_filter(cairo.FILTER_NEAREST)
+
             ctx.paint()
+            ctx.restore()
             if image_view == self._active_image:
                 ctx.save()
-                x_ini, y_ini = image_view.get_coordinates()
-                width, height = image_view.get_size()
-                ctx.rectangle(0, 0, width, height)
-                ctx.set_source_rgb(0, 0, 0)
+                ctx.translate(x_ini, y_ini)
+                ctx.set_line_width(WIDTH_CONTROL_LINES)
                 ctx.set_dash([2])
+                ctx.set_source_rgb(0, 0, 0)
+                # draw a line around the image
+                ctx.move_to(SIZE_RESIZE_AREA / 2, 0)
+                ctx.line_to(width, 0)
+                ctx.line_to(width, height)
+                ctx.line_to(0, height)
+                ctx.line_to(0, SIZE_RESIZE_AREA / 2)
+                ctx.stroke()
+                # draw the resize corner
+                ctx.rectangle(-SIZE_RESIZE_AREA / 2, -SIZE_RESIZE_AREA / 2,
+                              SIZE_RESIZE_AREA, SIZE_RESIZE_AREA)
                 ctx.stroke()
                 ctx.restore()
-            ctx.restore()
 
         # Draw the border
         ctx.save()
@@ -122,7 +136,12 @@ class ImageCanvas(Gtk.DrawingArea):
     def __button_press_cb(self, widget, event):
         # Check if clicked over a image
         for image_view in self._images:
-            if image_view.is_inside(event.x, event.y):
+            if image_view.is_in_size_area(event.x, event.y):
+                self._active_image = image_view
+                self._press_on_resize = True
+                self.queue_draw()
+                return
+            elif image_view.is_inside(event.x, event.y):
                 self._active_image = image_view
                 self._press_on_image = True
                 self.queue_draw()
@@ -131,27 +150,11 @@ class ImageCanvas(Gtk.DrawingArea):
         self._active_image = None
         self._press_on_image = False
         self.queue_draw()
-        """
-        if self._globo_activo is not None:
-            if self._globo_activo.is_selec_tam(event.x, event.y) or \
-                    self._globo_activo.get_cursor_type(event.x, event.y) \
-                    is not None:
-                self.is_dimension = True
-
-        if (not self.is_dimension) and not (self.is_punto):
-            if self.globos:
-                list_aux = self.globos[:]
-                list_aux.reverse()
-                for i in list_aux:
-                    if i.is_selec(event.x, event.y):
-                        self.glob_press = True
-                        self.set_globo_activo(i)
-                        self.redraw()
-                        break
-        """
 
     def __button_release_cb(self, widget, event):
         self._press_on_image = False
+        self._press_on_resize = False
+        self.queue_draw()
         if self._modified:
             self.emit('images-modified', self._images)
             self._modified = False
@@ -159,6 +162,10 @@ class ImageCanvas(Gtk.DrawingArea):
     def __motion_cb(self, widget, event):
         if self._press_on_image:
             self._active_image.move(event.x, event.y)
+            self._modified = True
+            self.queue_draw()
+        if self._press_on_resize:
+            self._active_image.resize(event.x, event.y)
             self._modified = True
             self.queue_draw()
 
@@ -176,32 +183,6 @@ class ImageCanvas(Gtk.DrawingArea):
                     self.image_name, THUMB_SIZE[0], THUMB_SIZE[1])
         return self.thumbnail
 
-    def draw_globos(self, context):
-        if len(self.globos) > 0:
-            for g in self.globos:
-                g.imprimir(context)
-
-    def releassing(self, widget, event):
-        self.glob_press = False
-        self.is_dimension = False
-
-    def mouse_move(self, widget, event):
-        if self._globo_activo is not None:
-            cursor_type = self._globo_activo.get_cursor_type(event.x, event.y)
-            cursor = None
-            if cursor_type is not None:
-                cursor = Gdk.Cursor(cursor_type)
-            self.get_window().set_cursor(cursor)
-
-    def moving(self, widget, event):
-        if self.is_dimension:
-            self._globo_activo.set_dimension(event.x, event.y,
-                                             self.get_allocation())
-            self.redraw()
-        elif self.glob_press:
-            self._globo_activo.mover_a(event.x, event.y,
-                                       self.get_allocation())
-            self.redraw()
     """
 
 
@@ -226,6 +207,9 @@ class ImageView():
         # points to the start of the image where the user click
         self._dx_click = 0
         self._dy_click = 0
+        # this is used to resize
+        self._resize_from_x, self._resize_from_y = 0, 0
+        self._resize_width, self._resize_heigth = 0, 0
 
     def get_coordinates(self):
         """
@@ -240,6 +224,16 @@ class ImageView():
         """
         return (self._canvas_width * self.width / 100.,
                 self._canvas_height * self.height / 100.)
+
+    def is_in_size_area(self, x, y):
+        resize = SIZE_RESIZE_AREA / 2
+        x_ini, y_ini = self.get_coordinates()
+        if x_ini - resize < x < x_ini + resize \
+                and y_ini - resize < y < y_ini + resize:
+            self._resize_from_x, self._resize_from_y = x, y
+            self._resize_width, self._resize_heigth = self.get_size()
+            return True
+        return False
 
     def is_inside(self, x, y):
         x_ini, y_ini = self.get_coordinates()
@@ -258,3 +252,17 @@ class ImageView():
         # set as percentage
         self.x = x_new * 100. / self._canvas_width
         self.y = y_new * 100. / self._canvas_height
+
+    def resize(self, x, y):
+        delta_x, delta_y = x - self._resize_from_x, y - self._resize_from_y
+        # set a minimal size
+        width_new = max(style.GRID_CELL_SIZE,
+                        self._resize_width - delta_x * 2)
+        height_new = max(style.GRID_CELL_SIZE,
+                         self._resize_heigth - delta_y * 2)
+        # set as percentage
+        self.width = width_new * 100. / self._canvas_width
+        self.height = height_new * 100. / self._canvas_height
+        # set as percentage
+        self.x = x * 100. / self._canvas_width
+        self.y = y * 100. / self._canvas_height
