@@ -202,13 +202,15 @@ class ImageView():
         # the size is stored as a percentage of the background image
         self.x = 0
         self.y = 0
+        self.pixbuf = GdkPixbuf.Pixbuf.new_from_file(self.path)
+
         self.width = width
+        if width == 0:
+            self.width = self.pixbuf.get_width() * 100. / self._canvas_width
         self.height = height
-        # store the pixbuf scaled
-        self.pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-            self.path,
-            canvas_width * self.width / 100.,
-            canvas_height * self.height / 100.)
+        if height == 0:
+            self.height = self.pixbuf.get_height() * 100. / self._canvas_height
+
         self.mirrored = False
         self.angle = 0
         # points to the start of the image where the user click

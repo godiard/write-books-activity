@@ -152,7 +152,7 @@ class Image():
         # the size and position is stored as a percentage of the background
         self.x = 0
         self.y = 0
-        self.width = 30
-        self.height = 30
+        self.width = 0
+        self.height = 0
         self.mirrored = False
         self.angle = 0
