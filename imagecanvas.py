@@ -110,18 +110,25 @@ class ImageCanvas(Gtk.DrawingArea):
                 ctx.save()
                 ctx.translate(x_ini, y_ini)
                 ctx.set_line_width(WIDTH_CONTROL_LINES)
-                ctx.set_dash([2])
-                ctx.set_source_rgb(0, 0, 0)
                 # draw a line around the image
                 ctx.move_to(SIZE_RESIZE_AREA / 2, 0)
                 ctx.line_to(width, 0)
                 ctx.line_to(width, height)
                 ctx.line_to(0, height)
                 ctx.line_to(0, SIZE_RESIZE_AREA / 2)
+                ctx.set_source_rgb(1, 1, 1)
+                ctx.stroke_preserve()
+                ctx.set_dash([4, 4])
+                ctx.set_source_rgb(0, 0, 0)
                 ctx.stroke()
                 # draw the resize corner
                 ctx.rectangle(-SIZE_RESIZE_AREA / 2, -SIZE_RESIZE_AREA / 2,
                               SIZE_RESIZE_AREA, SIZE_RESIZE_AREA)
+                ctx.set_dash([])
+                ctx.set_source_rgb(1, 1, 1)
+                ctx.stroke_preserve()
+                ctx.set_dash([4, 4])
+                ctx.set_source_rgb(0, 0, 0)
                 ctx.stroke()
                 ctx.restore()
 
