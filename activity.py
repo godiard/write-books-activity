@@ -117,6 +117,8 @@ class WriteBooksActivity(activity.Activity):
         toolbar_box.show_all()
 
         self._image_canvas = ImageCanvas()
+        self._image_canvas.connect('images-modified',
+                                   self.__images_modified_cb)
         self._image_canvas.set_halign(Gtk.Align.CENTER)
         self._image_canvas.set_valign(Gtk.Align.CENTER)
         self._image_canvas.set_vexpand(True)
@@ -230,6 +232,9 @@ class WriteBooksActivity(activity.Activity):
         logging.error('Add image %s', file_name)
         self._book_model.add_image(self._actual_page, file_name)
         self._update_page_view()
+
+    def __images_modified_cb(self, canvas, images_views):
+        self._book_model.update_images(self._actual_page, images_views)
 
     def _update_page_buttons(self):
         cant_pages = len(self._book_model.get_pages())

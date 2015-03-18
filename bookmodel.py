@@ -33,6 +33,19 @@ class BookModel():
         image.path = path
         page.images.append(image)
 
+    def update_images(self, page_number, images_views):
+        page = self._pages[page_number - 1]
+        cont = 0
+        for image in page.images:
+            image_view = images_views[cont]
+            image.x = image_view.x
+            image.y = image_view.y
+            image.width = image_view.width
+            image.height = image_view.height
+            image.mirrored = image_view.mirrored
+            image.angle = image_view.angle
+            cont += 1
+
     def write(self, file_path):
         instance_path = os.path.join(activity.get_activity_root(), 'instance')
 
