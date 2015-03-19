@@ -2,6 +2,7 @@
 #
 import cairo
 import logging
+import math
 
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -105,12 +106,29 @@ class ImageCanvas(Gtk.DrawingArea):
             width, height = image_view.get_size()
             ctx.save()
             ctx.translate(x_ini, y_ini)
-            if image_view.h_mirrored:
+
+            if image_view.angle != 0:
+                radians_angle = math.pi * float(image_view.angle) / 180.0
+                ctx.rotate(radians_angle)
+                if image_view.angle == 90:
+                    ctx.translate(0, -height)
+                elif image_view.angle == 180:
+                    ctx.translate(-width, -height)
+                elif image_view.angle == 270:
+                    ctx.translate(-width, 0)
+
+            h_mirrored = image_view.h_mirrored
+            v_mirrored = image_view.v_mirrored
+            if image_view.angle == 90 or image_view.angle == 270:
+                h_mirrored, v_mirrored = v_mirrored, h_mirrored
+
+            if h_mirrored:
                 ctx.translate(width, 0)
                 ctx.scale(-1.0, 1.0)
-            if image_view.v_mirrored:
+            if v_mirrored:
                 ctx.translate(0, height)
                 ctx.scale(1.0, -1.0)
+
             scale_x = width / image_view.pixbuf.get_width() * 1.0
             scale_y = height / image_view.pixbuf.get_height() * 1.0
             ctx.scale(scale_x, scale_y)
@@ -121,6 +139,9 @@ class ImageCanvas(Gtk.DrawingArea):
             ctx.paint()
             ctx.restore()
             if image_view == self._active_image:
+                if image_view.angle == 90 or image_view.angle == 270:
+                    width, height = height, width
+
                 ctx.save()
                 ctx.translate(x_ini, y_ini)
                 ctx.set_line_width(WIDTH_CONTROL_LINES)
@@ -179,6 +200,13 @@ class ImageCanvas(Gtk.DrawingArea):
             elif image_view.is_in_vertical_mirror_area(event.x, event.y):
                 in_image = True
                 image_view.v_mirrored = not image_view.v_mirrored
+                self._modified = True
+            elif image_view.is_in_rotate_area(event.x, event.y):
+                in_image = True
+                image_view.angle = image_view.angle - 90
+                if image_view.angle < 0:
+                    image_view.angle = 270
+                logging.error('Image angle %s', image_view.angle)
                 self._modified = True
             elif image_view.is_inside(event.x, event.y):
                 in_image = True
@@ -283,6 +311,9 @@ class ImageView():
     def is_in_vertical_mirror_area(self, x, y):
         return self._check_point_in_corner_control(x, y, 'BL')
 
+    def is_in_rotate_area(self, x, y):
+        return self._check_point_in_corner_control(x, y, 'TL')
+
     def _check_point_in_corner_control(self, x, y, corner):
         """
         x, y -- (int) coordinates in points
@@ -292,6 +323,8 @@ class ImageView():
         half_ctrl_size = CONTROL_SIZE / 2
         x_ini, y_ini = self.get_coordinates()
         width, height = self.get_size()
+        if self.angle == 90 or self.angle == 270:
+            width, height = height, width
 
         if corner == 'TL':
             x_btn = x_ini
@@ -315,6 +348,9 @@ class ImageView():
     def is_inside(self, x, y):
         x_ini, y_ini = self.get_coordinates()
         width, height = self.get_size()
+        if self.angle == 90 or self.angle == 270:
+            width, height = height, width
+
         if x_ini < x < x_ini + width and y_ini < y < y_ini + height:
             self._dx_click = x - x_ini
             self._dy_click = y - y_ini
@@ -332,6 +368,9 @@ class ImageView():
 
     def resize(self, x, y):
         delta_x, delta_y = x - self._resize_from_x, y - self._resize_from_y
+        if self.angle == 90 or self.angle == 270:
+            delta_x, delta_y = delta_y, delta_x
+
         # set a minimal size
         width_new = max(style.GRID_CELL_SIZE,
                         self._resize_width + delta_x)
