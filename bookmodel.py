@@ -42,7 +42,8 @@ class BookModel():
             image.y = image_view.y
             image.width = image_view.width
             image.height = image_view.height
-            image.mirrored = image_view.mirrored
+            image.h_mirrored = image_view.h_mirrored
+            image.v_mirrored = image_view.v_mirrored
             image.angle = image_view.angle
             cont += 1
 
@@ -65,7 +66,8 @@ class BookModel():
                 image_data['path'] = image.path
                 image_data['width'] = image.width
                 image_data['height'] = image.height
-                image_data['mirrored'] = image.mirrored
+                image_data['h_mirrored'] = image.h_mirrored
+                image_data['v_mirrored'] = image.v_mirrored
                 image_data['angle'] = image.angle
                 page_data['images'].append(image_data)
             pages.append(page_data)
@@ -131,7 +133,8 @@ class BookModel():
                 image.y = image_data['y']
                 image.width = image_data['width']
                 image.height = image_data['height']
-                image.mirrored = image_data['mirrored']
+                image.h_mirrored = image_data['h_mirrored']
+                image.v_mirrored = image_data['v_mirrored']
                 image.angle = image_data['angle']
                 page.images.append(image)
             self._pages.append(page)
@@ -154,5 +157,6 @@ class Image():
         self.y = 0
         self.width = 0
         self.height = 0
-        self.mirrored = False
+        self.h_mirrored = False
+        self.v_mirrored = False
         self.angle = 0

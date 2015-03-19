@@ -75,7 +75,8 @@ class ImageCanvas(Gtk.DrawingArea):
                 self._width, self._height)
             image_view.x = image_model.x
             image_view.y = image_model.y
-            image_view.mirrored = image_model.mirrored
+            image_view.h_mirrored = image_model.h_mirrored
+            image_view.v_mirrored = image_model.v_mirrored
             image_view.angle = image_model.angle
             self._images.append(image_view)
 
@@ -104,6 +105,12 @@ class ImageCanvas(Gtk.DrawingArea):
             width, height = image_view.get_size()
             ctx.save()
             ctx.translate(x_ini, y_ini)
+            if image_view.h_mirrored:
+                ctx.translate(width, 0)
+                ctx.scale(-1.0, 1.0)
+            if image_view.v_mirrored:
+                ctx.translate(0, height)
+                ctx.scale(1.0, -1.0)
             scale_x = width / image_view.pixbuf.get_width() * 1.0
             scale_y = height / image_view.pixbuf.get_height() * 1.0
             ctx.scale(scale_x, scale_y)
@@ -160,14 +167,25 @@ class ImageCanvas(Gtk.DrawingArea):
     def __button_press_cb(self, widget, event):
         # Check if clicked over a image
         for image_view in self._images:
+            in_image = False
+
             if image_view.is_in_size_area(event.x, event.y):
-                self._active_image = image_view
+                in_image = True
                 self._press_on_resize = True
-                self.queue_draw()
-                return
+            elif image_view.is_in_horizontal_mirror_area(event.x, event.y):
+                in_image = True
+                image_view.h_mirrored = not image_view.h_mirrored
+                self._modified = True
+            elif image_view.is_in_vertical_mirror_area(event.x, event.y):
+                in_image = True
+                image_view.v_mirrored = not image_view.v_mirrored
+                self._modified = True
             elif image_view.is_inside(event.x, event.y):
-                self._active_image = image_view
+                in_image = True
                 self._press_on_image = True
+
+            if in_image:
+                self._active_image = image_view
                 self.queue_draw()
                 return
 
@@ -228,7 +246,8 @@ class ImageView():
         if height == 0:
             self.height = self.pixbuf.get_height() * 100. / self._canvas_height
 
-        self.mirrored = False
+        self.h_mirrored = False
+        self.v_mirrored = False
         self.angle = 0
         # points to the start of the image where the user click
         self._dx_click = 0
