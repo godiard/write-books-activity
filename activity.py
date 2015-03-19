@@ -22,6 +22,8 @@ from gettext import gettext as _
 import logging
 
 from gi.repository import Gtk
+from gi.repository import GtkSource
+from gi.repository import Gdk
 from gi.repository import GObject
 from gi.repository import Pango
 
@@ -144,6 +146,7 @@ class WriteBooksActivity(activity.Activity):
         background.add(box)
 
         self.set_canvas(background)
+        self.prepare_edit_toolbar()
         self._update_page_buttons()
 
         self.show_all()
@@ -154,6 +157,26 @@ class WriteBooksActivity(activity.Activity):
     def read_file(self, file_path):
         self._book_model.read(file_path)
         self._update_page_buttons()
+
+    def prepare_edit_toolbar(self):
+        self._edit_toolbar.copy.connect('clicked', self.__copy_clicked_cb)
+        self._edit_toolbar.paste.connect('clicked', self.__paste_clicked_cb)
+        self._edit_toolbar.undo.connect('clicked', self.__undo_clicked_cb)
+        self._edit_toolbar.redo.connect('clicked', self.__redo_clicked_cb)
+
+    def __copy_clicked_cb(self, button):
+        self._text_editor.get_buffer().copy_clipboard(
+            Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD))
+
+    def __paste_clicked_cb(self, button):
+        self._text_editor.get_buffer().paste_clipboard(
+            Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD), None, True)
+
+    def __undo_clicked_cb(self, button):
+        self._text_editor.get_buffer().undo()
+
+    def __redo_clicked_cb(self, button):
+        self._text_editor.get_buffer().redo()
 
     def __set_background_clicked_cb(self, button):
         categories = {
@@ -279,6 +302,10 @@ class TextEditor(Gtk.TextView):
 
     def __init__(self):
         Gtk.TextView.__init__(self)
+        buffer = GtkSource.Buffer()
+        self.set_buffer(buffer)
+        buffer.set_highlight_syntax(False)
+        buffer.set_max_undo_levels(30)
 
         self.set_wrap_mode(Gtk.WrapMode.WORD)
         self.set_pixels_above_lines(0)
@@ -300,4 +327,6 @@ class TextEditor(Gtk.TextView):
                                           False)
 
     def set_text(self, text):
+        self.get_buffer().begin_not_undoable_action()
         self.get_buffer().set_text(text)
+        self.get_buffer().end_not_undoable_action()
