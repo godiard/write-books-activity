@@ -41,9 +41,12 @@ class ImageCanvas(Gtk.DrawingArea):
         self.connect('size_allocate', self.__size_allocate_cb)
         self.connect("draw", self.__draw_cb)
 
-        self.connect("button_press_event", self.__button_press_cb)
-        self.connect("motion_notify_event", self.__motion_cb)
-        self.connect("button_release_event", self.__button_release_cb)
+        self._bt_press_id = self.connect(
+            'button_press_event', self.__button_press_cb)
+        self._motion_id = self.connect(
+            'motion_notify_event', self.__motion_cb)
+        self._bt_release_id = self.connect(
+            'button_release_event', self.__button_release_cb)
 
         # load pixbufs for controls
         self._rotate_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
@@ -57,6 +60,19 @@ class ImageCanvas(Gtk.DrawingArea):
 
     def __size_allocate_cb(self, WIDGET, allocation):
         self._request_size()
+
+    def set_editable(self, editable):
+        if not editable:
+            self.disconnect(self._bt_press_id)
+            self.disconnect(self._motion_id)
+            self.disconnect(self._bt_release_id)
+        else:
+            self._bt_press_id = self.connect(
+                'button_press_event', self.__button_press_cb)
+            self._motion_id = self.connect(
+                'motion_notify_event', self.__motion_cb)
+            self._bt_release_id = self.connect(
+                'button_release_event', self.__button_release_cb)
 
     def _request_size(self):
         self._height = Gdk.Screen.height() / 4 * 3
