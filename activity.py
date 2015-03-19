@@ -34,6 +34,7 @@ from sugar3.activity.widgets import EditToolbar
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
+from sugar3.graphics.alert import ConfirmationAlert
 from sugar3.graphics import style
 from sugar3.graphics.objectchooser import ObjectChooser
 try:
@@ -96,6 +97,11 @@ class WriteBooksActivity(activity.Activity):
         self._add_page_button.set_tooltip(_('Add a page'))
         self._add_page_button.connect('clicked', self.__add_page_clicked_cb)
         toolbar_box.toolbar.insert(self._add_page_button, -1)
+
+        self._remove_button = ToolButton('edit-delete')
+        self._remove_button.set_tooltip(_('Remove a image or page'))
+        self._remove_button.connect('clicked', self.__remove_clicked_cb)
+        toolbar_box.toolbar.insert(self._remove_button, -1)
 
         self._prev_page_button = ToolButton('go-previous-paired')
         self._prev_page_button.set_tooltip(_('Previous page'))
@@ -255,6 +261,34 @@ class WriteBooksActivity(activity.Activity):
         logging.error('Add image %s', file_name)
         self._book_model.add_image(self._actual_page, file_name)
         self._update_page_view()
+
+    def __remove_clicked_cb(self, file_name):
+        if self._image_canvas.is_image_active():
+            alert = ConfirmationAlert()
+            alert.props.title = _('Do you want remove the selected image?')
+            # alert.props.msg = _('')
+            alert.connect('response', self.__confirm_remove_image_cb)
+            self.add_alert(alert)
+        else:
+            if len(self._book_model.get_pages()) > 1:
+                alert = ConfirmationAlert()
+                alert.props.title = _('Do you want remove the page?')
+                # alert.props.msg = _('')
+                alert.connect('response', self.__confirm_remove_page_cb)
+                self.add_alert(alert)
+
+    def __confirm_remove_image_cb(self, alert, response_id):
+        # Callback for conf alert
+        self.remove_alert(alert)
+        if response_id is Gtk.ResponseType.OK:
+            self._image_canvas.remove_active_image()
+
+    def __confirm_remove_page_cb(self, alert, response_id):
+        # Callback for conf alert
+        self.remove_alert(alert)
+        if response_id is Gtk.ResponseType.OK:
+            if self._book_model.remove_page(self._actual_page):
+                self._update_page_buttons()
 
     def __images_modified_cb(self, canvas, images_views):
         self._book_model.update_images(self._actual_page, images_views)

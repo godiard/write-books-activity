@@ -18,6 +18,13 @@ class BookModel():
     def add_page(self):
         self._pages.append(Page())
 
+    def remove_page(self, page_number):
+        if page_number > len(self._pages):
+            return False
+        page = self.get_page_model(page_number)
+        self._pages.remove(page)
+        return True
+
     def get_page_model(self, page_number):
         return self._pages[page_number - 1]
 

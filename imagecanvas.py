@@ -221,6 +221,15 @@ class ImageCanvas(Gtk.DrawingArea):
         self._press_on_image = False
         self.queue_draw()
 
+    def is_image_active(self):
+        return self._active_image is not None
+
+    def remove_active_image(self):
+        if self._active_image is not None:
+            self._images.remove(self._active_image)
+            self.emit('images-modified', self._images)
+            self.queue_draw()
+
     def __button_release_cb(self, widget, event):
         self._press_on_image = False
         self._press_on_resize = False
