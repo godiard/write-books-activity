@@ -1,6 +1,7 @@
 # Copyright 2015 Gonzalo Odiard
 #
 import cairo
+import logging
 
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -251,17 +252,46 @@ class ImageView():
                 self._canvas_height * self.height / 100.)
 
     def is_in_size_area(self, x, y):
-        resize = CONTROL_SIZE / 2
-        x_btn, y_btn = self.get_coordinates()
-        width, height = self.get_size()
-        x_btn = x_btn + width
-        y_btn = y_btn + height
-        if x_btn - resize < x < x_btn + resize \
-                and y_btn - resize < y < y_btn + resize:
+        if self._check_point_in_corner_control(x, y, 'BR'):
             self._resize_from_x, self._resize_from_y = x, y
             self._resize_width, self._resize_heigth = self.get_size()
             return True
         return False
+
+    def is_in_horizontal_mirror_area(self, x, y):
+        return self._check_point_in_corner_control(x, y, 'TR')
+
+    def is_in_vertical_mirror_area(self, x, y):
+        return self._check_point_in_corner_control(x, y, 'BL')
+
+    def _check_point_in_corner_control(self, x, y, corner):
+        """
+        x, y -- (int) coordinates in points
+        corner -- (str) one of ['TL', 'TR', 'BL', 'BR']
+            (Top Left, Top Right, Bottom Left and Bottom Right)
+        """
+        half_ctrl_size = CONTROL_SIZE / 2
+        x_ini, y_ini = self.get_coordinates()
+        width, height = self.get_size()
+
+        if corner == 'TL':
+            x_btn = x_ini
+            y_btn = y_ini
+        elif corner == 'TR':
+            x_btn = x_ini + width
+            y_btn = y_ini
+        elif corner == 'BL':
+            x_btn = x_ini
+            y_btn = y_ini + height
+        elif corner == 'BR':
+            x_btn = x_ini + width
+            y_btn = y_ini + height
+        else:
+            logging.error('_check_point_in_corner_control bad corner %s',
+                          corner)
+
+        return x_btn - half_ctrl_size < x < x_btn + half_ctrl_size \
+            and y_btn - half_ctrl_size < y < y_btn + half_ctrl_size
 
     def is_inside(self, x, y):
         x_ini, y_ini = self.get_coordinates()
