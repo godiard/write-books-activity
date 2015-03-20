@@ -124,6 +124,14 @@ class WriteBooksActivity(activity.Activity):
         self.set_toolbar_box(toolbar_box)
         toolbar_box.show_all()
 
+        edition_canvas = self.create_edition_canvas()
+        self.set_canvas(edition_canvas)
+        self.prepare_edit_toolbar()
+        self._update_page_buttons()
+
+        self.show_all()
+
+    def create_edition_canvas(self):
         self._image_canvas = ImageCanvas()
         self._image_canvas.connect('images-modified',
                                    self.__images_modified_cb)
@@ -150,12 +158,7 @@ class WriteBooksActivity(activity.Activity):
         box.pack_start(self._image_canvas, True, True, 0)
         box.pack_start(self._text_editor, False, False, style.DEFAULT_PADDING)
         background.add(box)
-
-        self.set_canvas(background)
-        self.prepare_edit_toolbar()
-        self._update_page_buttons()
-
-        self.show_all()
+        return background
 
     def write_file(self, file_path):
         self._book_model.write(file_path)
