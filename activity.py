@@ -34,6 +34,7 @@ from sugar3.activity.widgets import EditToolbar
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
+from sugar3.graphics.toggletoolbutton import ToggleToolButton
 from sugar3.graphics.alert import ConfirmationAlert
 from sugar3.graphics import style
 from sugar3.graphics.objectchooser import ObjectChooser
@@ -45,6 +46,7 @@ except:
 from imagecanvas import ImageCanvas
 from imagechooser import ImageFileChooser
 from bookmodel import BookModel
+from previewpanel import PreviewPanel
 
 # TODO: get the real scratch path
 SCRATCH_PATH = '/home/olpc/Activities/Scratch.activity'
@@ -113,6 +115,11 @@ class WriteBooksActivity(activity.Activity):
         self._next_page_button.connect('clicked', self.__next_page_clicked_cb)
         toolbar_box.toolbar.insert(self._next_page_button, -1)
 
+        self._view_list_button = ToggleToolButton('view-list')
+        self._view_list_button.set_tooltip(_('View pages'))
+        self._view_list_button.connect('toggled', self.__view_list_toggled_cb)
+        toolbar_box.toolbar.insert(self._view_list_button, -1)
+
         separator = Gtk.SeparatorToolItem()
         separator.props.draw = False
         separator.set_expand(True)
@@ -158,7 +165,43 @@ class WriteBooksActivity(activity.Activity):
         box.pack_start(self._image_canvas, True, True, 0)
         box.pack_start(self._text_editor, False, False, style.DEFAULT_PADDING)
         background.add(box)
+        background.show_all()
         return background
+
+    def create_preview_canvas(self):
+        self._image_canvas = ImageCanvas()
+        self._image_canvas.set_editable(False)
+        self._image_canvas.set_halign(Gtk.Align.CENTER)
+        self._image_canvas.set_valign(Gtk.Align.CENTER)
+        self._image_canvas.set_vexpand(True)
+
+        self._text_editor = TextEditor()
+        self._text_changed_signal_id = self._text_editor.connect(
+            'changed', self.__text_changed_cb)
+        self._text_editor.set_sensitive(False)
+
+        background = Gtk.EventBox()
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        vbox.pack_start(self._page_counter_label, False, False, 0)
+        vbox.pack_start(self._image_canvas, True, True, 0)
+        vbox.pack_start(self._text_editor, False, False, style.DEFAULT_PADDING)
+
+        hbox = Gtk.HBox()
+        self._preview_panel = PreviewPanel(self._book_model.get_pages())
+        hbox.pack_start(self._preview_panel, False, False, 0)
+        hbox.pack_start(vbox, True, True, 0)
+        background.add(hbox)
+        background.show_all()
+        return background
+
+    def __view_list_toggled_cb(self, button):
+        if button.get_active():
+            preview_canvas = self.create_preview_canvas()
+            self.set_canvas(preview_canvas)
+        else:
+            edition_canvas = self.create_edition_canvas()
+            self.set_canvas(edition_canvas)
 
     def write_file(self, file_path):
         self._book_model.write(file_path)
