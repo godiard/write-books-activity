@@ -291,6 +291,8 @@ class WriteBooksActivity(activity.Activity):
         self.remove_alert(alert)
         if response_id is Gtk.ResponseType.OK:
             if self._book_model.remove_page(self._actual_page):
+                if self._actual_page > len(self._book_model.get_pages()):
+                    self._actual_page -= 1
                 self._update_page_buttons()
 
     def __images_modified_cb(self, canvas, images_views):
