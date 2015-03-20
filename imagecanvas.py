@@ -31,13 +31,13 @@ class ImageCanvas(Gtk.DrawingArea):
 
         self._background = None
         self._background_path = None
+        self._image_models = []
         self._images = []
         self._active_image = None
         self._press_on_image = False
         self._press_on_resize = False
         self._modified = False
 
-        self._request_size()
         self.connect('size_allocate', self.__size_allocate_cb)
         self.connect("draw", self.__draw_cb)
 
@@ -58,8 +58,16 @@ class ImageCanvas(Gtk.DrawingArea):
         self._resize_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
             './icons/resize.svg', CONTROL_SIZE, CONTROL_SIZE)
 
-    def __size_allocate_cb(self, WIDGET, allocation):
-        self._request_size()
+    def __size_allocate_cb(self, widget, allocation):
+        logging.error('allocation called in the canvas %s x %s',
+                      allocation.width, allocation.height)
+        width, height = allocation.width, allocation.height
+        if allocation.width == 1 and allocation.height == 1:
+            return
+        self._width = width
+        self._height = height
+        self._background = None
+        self._create_view_images()
 
     def set_editable(self, editable):
         if not editable:
@@ -74,19 +82,19 @@ class ImageCanvas(Gtk.DrawingArea):
             self._bt_release_id = self.connect(
                 'button_release_event', self.__button_release_cb)
 
-    def _request_size(self):
-        self._height = Gdk.Screen.height() / 4 * 3
-        self._width = self._height / 3 * 4
-        self.set_size_request(self._width, self._height)
-
     def set_background(self, file_path):
         self._background_path = file_path
         self._background = None
         self.queue_draw()
 
     def set_images(self, image_models):
+        self._image_models = image_models
+        self._create_view_images()
+        self.queue_draw()
+
+    def _create_view_images(self):
         self._images = []
-        for image_model in image_models:
+        for image_model in self._image_models:
             image_view = ImageView(
                 image_model.path, image_model.width, image_model.height,
                 self._width, self._height)

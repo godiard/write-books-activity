@@ -132,11 +132,18 @@ class WriteBooksActivity(activity.Activity):
         toolbar_box.show_all()
 
         edition_canvas = self.create_edition_canvas()
-        self.set_canvas(edition_canvas)
+
+        hbox = Gtk.HBox()
+        self._preview_panel = PreviewPanel(self._book_model.get_pages())
+        hbox.pack_start(self._preview_panel, False, False, 0)
+        hbox.pack_start(edition_canvas, True, True, 0)
+
+        self.set_canvas(hbox)
         self.prepare_edit_toolbar()
         self._update_page_buttons()
 
         self.show_all()
+        self._preview_panel.hide()
 
     def create_edition_canvas(self):
         self._image_canvas = ImageCanvas()
@@ -166,42 +173,23 @@ class WriteBooksActivity(activity.Activity):
         box.pack_start(self._text_editor, False, False, style.DEFAULT_PADDING)
         background.add(box)
         background.show_all()
+        background.connect('size_allocate', self.__background_size_allocate_cb)
         return background
 
-    def create_preview_canvas(self):
-        self._image_canvas = ImageCanvas()
-        self._image_canvas.set_editable(False)
-        self._image_canvas.set_halign(Gtk.Align.CENTER)
-        self._image_canvas.set_valign(Gtk.Align.CENTER)
-        self._image_canvas.set_vexpand(True)
-
-        self._text_editor = TextEditor()
-        self._text_changed_signal_id = self._text_editor.connect(
-            'changed', self.__text_changed_cb)
-        self._text_editor.set_sensitive(False)
-
-        background = Gtk.EventBox()
-
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        vbox.pack_start(self._page_counter_label, False, False, 0)
-        vbox.pack_start(self._image_canvas, True, True, 0)
-        vbox.pack_start(self._text_editor, False, False, style.DEFAULT_PADDING)
-
-        hbox = Gtk.HBox()
-        self._preview_panel = PreviewPanel(self._book_model.get_pages())
-        hbox.pack_start(self._preview_panel, False, False, 0)
-        hbox.pack_start(vbox, True, True, 0)
-        background.add(hbox)
-        background.show_all()
-        return background
+    def __background_size_allocate_cb(self, widget, allocation):
+        height = allocation.height / 5 * 4
+        width = height / 3 * 4
+        logging.error('size allocate %s x %s', width, height)
+        self._image_canvas.set_size_request(width, height)
+        widget.check_resize()
 
     def __view_list_toggled_cb(self, button):
         if button.get_active():
-            preview_canvas = self.create_preview_canvas()
-            self.set_canvas(preview_canvas)
+            self._preview_panel.show()
+            self._image_canvas.set_editable(False)
         else:
-            edition_canvas = self.create_edition_canvas()
-            self.set_canvas(edition_canvas)
+            self._preview_panel.hide()
+            self._image_canvas.set_editable(True)
 
     def write_file(self, file_path):
         self._book_model.write(file_path)
