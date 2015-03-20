@@ -109,6 +109,23 @@ class ImageCanvas(Gtk.DrawingArea):
         self.draw_in_context(context)
         return False
 
+    def create_pixbuf(self, width, height, background_path, images):
+        # this method is here to not need copy all the logic
+        # to draw the iconview icons in the sorting screen
+        # do not use the same widget as is used to edit in different sizes
+        # or the cached pixbuf will be broken
+        self._width = width
+        self._height = height
+        self.set_background(background_path)
+        self.set_images(images)
+        surface = cairo.ImageSurface(
+            cairo.FORMAT_ARGB32, self._width, self._height)
+        ctx = cairo.Context(surface)
+        self.draw_in_context(ctx)
+        surface.flush()
+        return Gdk.pixbuf_get_from_surface(surface, 0, 0,
+                                           self._width, self._height)
+
     def draw_in_context(self, ctx):
         # Draw the background image
 
@@ -271,22 +288,6 @@ class ImageCanvas(Gtk.DrawingArea):
             self._active_image.resize(event.x, event.y)
             self._modified = True
             self.queue_draw()
-
-    """
-    def get_thumbnail(self):
-        if self.thumbnail is None:
-            instance_path = os.path.join(activity.get_activity_root(),
-                                         'instance')
-            if (not self.image_name.startswith(instance_path)):
-                self.thumbnail = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    os.path.join(instance_path, self.image_name),
-                    THUMB_SIZE[0], THUMB_SIZE[1])
-            else:
-                self.thumbnail = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    self.image_name, THUMB_SIZE[0], THUMB_SIZE[1])
-        return self.thumbnail
-
-    """
 
 
 class ImageView():

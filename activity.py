@@ -185,6 +185,7 @@ class WriteBooksActivity(activity.Activity):
 
     def __view_list_toggled_cb(self, button):
         if button.get_active():
+            self._preview_panel.update_model(self._book_model.get_pages())
             self._preview_panel.show()
             self._image_canvas.set_editable(False)
         else:
