@@ -343,6 +343,7 @@ class WriteBooksActivity(activity.Activity):
                 if self._actual_page > len(self._book_model.get_pages()):
                     self._actual_page -= 1
                 self._update_page_buttons()
+                self._preview_panel.update_model(self._book_model.get_pages())
 
     def __images_modified_cb(self, canvas, images_views):
         self._book_model.update_images(self._actual_page, images_views)
@@ -368,6 +369,7 @@ class WriteBooksActivity(activity.Activity):
         self._book_model.add_page()
         self._actual_page = len(self._book_model.get_pages())
         self._update_page_buttons()
+        self._preview_panel.update_model(self._book_model.get_pages())
 
     def __next_page_clicked_cb(self, button):
         self._actual_page += 1
