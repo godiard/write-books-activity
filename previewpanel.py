@@ -36,7 +36,8 @@ class PreviewPanel(Gtk.VBox):
         # TODO: No logic here.... set a bigger item size
         # display a very width item
         self._icon_view.set_item_width(self._width / 2)
-        self._icon_view.connect('selection-changed', self.__item_activated_cb)
+        self._item_activated_id = self._icon_view.connect(
+            'selection-changed', self.__item_activated_cb)
         self._icon_view.connect('drag-end', self.__drag_end_cb)
         self.add(scrolled)
         scrolled.add(self._icon_view)
@@ -68,6 +69,21 @@ class PreviewPanel(Gtk.VBox):
         if path is not None:
             order = model[path][2]
             self.emit('page-activated', order + 1)
+
+    def update_position(self, delta):
+        # delta can be 1 or -1 to move up or down
+        success, path, renderer = self._icon_view.get_cursor()
+        if success:
+            if delta == 1:
+                path.next()
+            else:
+                path.prev()
+            self._icon_view.disconnect(self._item_activated_id)
+            self._icon_view.select_path(path)
+            self._icon_view.set_cursor(path, renderer, True)
+
+            self._item_activated_id = self._icon_view.connect(
+                'selection-changed', self.__item_activated_cb)
 
     def __drag_end_cb(self, icon_view, drag_context):
         # check if the pages are unsorted

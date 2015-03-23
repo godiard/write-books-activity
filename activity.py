@@ -392,10 +392,12 @@ class WriteBooksActivity(activity.Activity):
     def __next_page_clicked_cb(self, button):
         self._actual_page += 1
         self._update_page_buttons()
+        self._preview_panel.update_position(1)
 
     def __prev_page_clicked_cb(self, button):
         self._actual_page -= 1
         self._update_page_buttons()
+        self._preview_panel.update_position(-1)
 
     def __page_activated_cb(self, preview_panel, order):
         self._actual_page = order
