@@ -15,6 +15,9 @@ class BookModel():
     def get_pages(self):
         return self._pages
 
+    def set_pages(self, pages):
+        self._pages = pages
+
     def add_page(self):
         self._pages.append(Page())
 
