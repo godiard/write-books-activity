@@ -135,6 +135,7 @@ class WriteBooksActivity(activity.Activity):
 
         hbox = Gtk.HBox()
         self._preview_panel = PreviewPanel(self._book_model.get_pages())
+        self._preview_panel.connect('page-activated', self.__page_activated_cb)
         hbox.pack_start(self._preview_panel, False, False, 0)
         hbox.pack_start(edition_canvas, True, True, 0)
 
@@ -373,6 +374,10 @@ class WriteBooksActivity(activity.Activity):
 
     def __prev_page_clicked_cb(self, button):
         self._actual_page -= 1
+        self._update_page_buttons()
+
+    def __page_activated_cb(self, preview_panel, order):
+        self._actual_page = order
         self._update_page_buttons()
 
     def __text_changed_cb(self, texteditor):
