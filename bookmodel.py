@@ -18,8 +18,28 @@ class BookModel():
     def set_pages(self, pages):
         self._pages = pages
 
-    def add_page(self):
-        self._pages.append(Page())
+    def add_page(self, page=None):
+        new_page = Page()
+        if page is not None:
+            new_page.background_path = page.background_path
+            new_page.text = page.text
+            # clone the content of the images array
+            # to avoid have the 2 pages pointing to the same
+            # image objects
+            tmp_images = page.images[:]
+            for image in tmp_images:
+                new_image = Image()
+                new_image.path = image.path
+                new_image.x = image.x
+                new_image.y = image.y
+                new_image.width = image.width
+                new_image.height = image.height
+                new_image.h_mirrored = image.h_mirrored
+                new_image.v_mirrored = image.v_mirrored
+                new_image.angle = image.angle
+                new_page.images.append(new_image)
+
+        self._pages.append(new_page)
 
     def remove_page(self, page_number):
         if page_number > len(self._pages):

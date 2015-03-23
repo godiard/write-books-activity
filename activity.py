@@ -36,12 +36,14 @@ from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics.toggletoolbutton import ToggleToolButton
 from sugar3.graphics.alert import ConfirmationAlert
+from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
 from sugar3.graphics.objectchooser import ObjectChooser
 try:
     from sugar3.graphics.objectchooser import FILTER_TYPE_GENERIC_MIME
 except:
     FILTER_TYPE_GENERIC_MIME = 'generic_mime'
+from sugar3 import profile
 
 from imagecanvas import ImageCanvas
 from imagechooser import ImageFileChooser
@@ -94,6 +96,15 @@ class WriteBooksActivity(activity.Activity):
         toolbar_box.toolbar.insert(insert_picture_button, -1)
 
         toolbar_box.toolbar.insert(Gtk.SeparatorToolItem(), -1)
+
+        self._duplicate_page_button = ToolButton()
+        icon = Icon(icon_name='edit-duplicate', xo_color=profile.get_color())
+        self._duplicate_page_button.set_icon_widget(icon)
+
+        self._duplicate_page_button.set_tooltip(_('Duplicate page'))
+        self._duplicate_page_button.connect(
+            'clicked', self.__duplicate_page_clicked_cb)
+        toolbar_box.toolbar.insert(self._duplicate_page_button, -1)
 
         self._add_page_button = ToolButton('list-add')
         self._add_page_button.set_tooltip(_('Add a page'))
@@ -367,6 +378,13 @@ class WriteBooksActivity(activity.Activity):
 
     def __add_page_clicked_cb(self, button):
         self._book_model.add_page()
+        self._actual_page = len(self._book_model.get_pages())
+        self._update_page_buttons()
+        self._preview_panel.update_model(self._book_model.get_pages())
+
+    def __duplicate_page_clicked_cb(self, button):
+        actual_page_model = self._book_model.get_page_model(self._actual_page)
+        self._book_model.add_page(actual_page_model)
         self._actual_page = len(self._book_model.get_pages())
         self._update_page_buttons()
         self._preview_panel.update_model(self._book_model.get_pages())
