@@ -8,6 +8,8 @@ from gi.repository.GdkPixbuf import Pixbuf
 
 from imagecanvas import ImageCanvas
 
+MAX_TEXT_SIZE = 25
+
 
 class PreviewPanel(Gtk.VBox):
 
@@ -44,8 +46,9 @@ class PreviewPanel(Gtk.VBox):
         icon_height = int(icon_width * 3 / 4.)
         for page in pages:
             text = page.text
-            if len(text) > 20:
-                text = text[0:17] + '...'
+            text = text.replace('\n', '')
+            if len(text) > MAX_TEXT_SIZE:
+                text = text[0:MAX_TEXT_SIZE - 3] + '...'
             pixbuf = image_renderer.create_pixbuf(
                 icon_width, icon_height, page.background_path, page.images)
-            liststore.append([pixbuf, page.text])
+            liststore.append([pixbuf, text])
