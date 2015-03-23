@@ -59,7 +59,7 @@ class ImageCanvas(Gtk.DrawingArea):
             './icons/resize.svg', CONTROL_SIZE, CONTROL_SIZE)
 
     def __size_allocate_cb(self, widget, allocation):
-        logging.error('allocation called in the canvas %s x %s',
+        logging.debug('allocation called in the canvas %s x %s',
                       allocation.width, allocation.height)
         width, height = allocation.width, allocation.height
         if allocation.width == 1 and allocation.height == 1:

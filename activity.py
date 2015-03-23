@@ -194,7 +194,7 @@ class WriteBooksActivity(activity.Activity):
     def __background_size_allocate_cb(self, widget, allocation):
         height = allocation.height / 4 * 3
         width = height / 3 * 4
-        logging.error('size allocate %s x %s', width, height)
+        logging.debug('size allocate %s x %s', width, height)
         self._image_canvas.set_size_request(width, height)
         widget.check_resize()
 
