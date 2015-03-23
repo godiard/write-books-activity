@@ -166,18 +166,31 @@ class WriteBooksActivity(activity.Activity):
         self._page_counter_label.set_margin_top(style.DEFAULT_PADDING)
 
         background = Gtk.EventBox()
+        rgba = Gdk.RGBA()
+        rgba.red, rgba.green, rgba.blue, rgba.alpha = 1., 1., 1., 1.
+        background.override_background_color(Gtk.StateFlags.NORMAL, rgba)
+
+        self._scrolled_window = Gtk.ScrolledWindow()
+        self._scrolled_window.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self._scrolled_window.set_size_request(-1, style.GRID_CELL_SIZE * 2)
+        self._scrolled_window.set_policy(Gtk.PolicyType.NEVER,
+                                         Gtk.PolicyType.AUTOMATIC)
+        self._scrolled_window.add(self._text_editor)
+        self._scrolled_window.set_margin_left(style.GRID_CELL_SIZE)
+        self._scrolled_window.set_margin_right(style.GRID_CELL_SIZE)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         box.pack_start(self._page_counter_label, False, False, 0)
         box.pack_start(self._image_canvas, True, True, 0)
-        box.pack_start(self._text_editor, False, False, style.DEFAULT_PADDING)
+        box.pack_start(self._scrolled_window, False, False,
+                       style.DEFAULT_PADDING)
         background.add(box)
         background.show_all()
         background.connect('size_allocate', self.__background_size_allocate_cb)
         return background
 
     def __background_size_allocate_cb(self, widget, allocation):
-        height = allocation.height / 5 * 4
+        height = allocation.height / 4 * 3
         width = height / 3 * 4
         logging.error('size allocate %s x %s', width, height)
         self._image_canvas.set_size_request(width, height)
@@ -188,9 +201,11 @@ class WriteBooksActivity(activity.Activity):
             self._preview_panel.update_model(self._book_model.get_pages())
             self._preview_panel.show()
             self._image_canvas.set_editable(False)
+            self._text_editor.set_editable(False)
         else:
             self._preview_panel.hide()
             self._image_canvas.set_editable(True)
+            self._text_editor.set_editable(True)
 
     def write_file(self, file_path):
         self._book_model.write(file_path)
@@ -380,16 +395,14 @@ class TextEditor(Gtk.TextView):
 
         self.set_wrap_mode(Gtk.WrapMode.WORD)
         self.set_pixels_above_lines(0)
-        self.set_margin_left(style.GRID_CELL_SIZE)
-        self.set_margin_right(style.GRID_CELL_SIZE)
-        self.set_margin_bottom(style.DEFAULT_PADDING)
-        self.set_size_request(-1, style.GRID_CELL_SIZE * 1.5)
+        self.set_size_request(-1, style.GRID_CELL_SIZE)
 
         font_desc = Pango.font_description_from_string('14')
         self.modify_font(font_desc)
         self.get_buffer().connect('changed', self.__buffer_changed_cb)
 
     def __buffer_changed_cb(self, text_buffer):
+        self.place_cursor_onscreen()
         self.emit('changed')
 
     def get_text(self):
