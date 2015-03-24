@@ -89,10 +89,12 @@ class ImageFileChooser(Gtk.Window):
         self._vbox.pack_start(separator, False, True, 0)
         separator.show()
 
+        self._main_path = path
         self._toolbar = SearchToolbox(path, add_back_button=True)
         self._toolbar.connect('query-changed', self.__query_changed_cb)
         self._toolbar.connect('go-back', self.__go_back_cb)
         self._toolbar.set_size_request(-1, style.GRID_CELL_SIZE)
+        self._toolbar.show()
         self._vbox.pack_start(self._toolbar, False, True, 0)
 
         width = Gdk.Screen.width() - style.GRID_CELL_SIZE * 2
@@ -125,7 +127,6 @@ class ImageFileChooser(Gtk.Window):
             self._buttons_vbox.pack_start(button, False, False, 10)
         self._buttons_vbox.show_all()
         self._vbox.pack_start(self._buttons_vbox, True, True, 0)
-        self._toolbar.hide()
 
     def __category_btn_clicked_cb(self, button, category_path):
         self.show_icon_view(category_path)
@@ -176,6 +177,12 @@ class ImageFileChooser(Gtk.Window):
         return self._selected_object_id
 
     def __query_changed_cb(self, toolbar, query):
+        if len(query['query']) < 3:
+            logging.error('Don\'t query with a filter of less than 3 letters'
+                          'to avoid big querys, slow in the XO-1')
+            return
+        if self._icon_view is None:
+            self.show_icon_view(self._main_path)
         self._icon_view.update_with_query(query)
 
     def __volume_changed_cb(self, volume_toolbar, mount_point):
