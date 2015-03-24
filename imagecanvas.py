@@ -74,6 +74,7 @@ class ImageCanvas(Gtk.DrawingArea):
             self.disconnect(self._bt_press_id)
             self.disconnect(self._motion_id)
             self.disconnect(self._bt_release_id)
+            self._active_image = None
         else:
             self._bt_press_id = self.connect(
                 'button_press_event', self.__button_press_cb)
@@ -90,6 +91,7 @@ class ImageCanvas(Gtk.DrawingArea):
     def set_images(self, image_models):
         self._image_models = image_models
         self._create_view_images()
+        self._active_image = None
         self.queue_draw()
 
     def _create_view_images(self):
