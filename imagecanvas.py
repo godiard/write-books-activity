@@ -128,6 +128,22 @@ class ImageCanvas(Gtk.DrawingArea):
         return Gdk.pixbuf_get_from_surface(surface, 0, 0,
                                            self._width, self._height)
 
+    def write_to_png(self, dest_path, width, height, background_path, images):
+        # this method is here to not need copy all the logic
+        # to draw the image to use in the epub files
+        # do not use the same widget as is used to edit in different sizes
+        # or the cached pixbuf will be broken
+        self._width = width
+        self._height = height
+        self.set_background(background_path)
+        self.set_images(images)
+        surface = cairo.ImageSurface(
+            cairo.FORMAT_ARGB32, self._width, self._height)
+        ctx = cairo.Context(surface)
+        self.draw_in_context(ctx)
+        surface.flush()
+        surface.write_to_png(dest_path)
+
     def draw_in_context(self, ctx):
         # Draw the background image
 

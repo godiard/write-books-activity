@@ -18,6 +18,7 @@
 
 import os
 import time
+import shutil
 from gettext import gettext as _
 import logging
 
@@ -36,6 +37,7 @@ from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics.toggletoolbutton import ToggleToolButton
 from sugar3.graphics.alert import ConfirmationAlert
+from sugar3.graphics.alert import NotifyAlert
 from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
 from sugar3.graphics.objectchooser import ObjectChooser
@@ -44,11 +46,13 @@ try:
 except:
     FILTER_TYPE_GENERIC_MIME = 'generic_mime'
 from sugar3 import profile
+from sugar3.datastore import datastore
 
 from imagecanvas import ImageCanvas
 from imagechooser import ImageFileChooser
 from bookmodel import BookModel
 from previewpanel import PreviewPanel
+from epubfactory import create_ebub_from_book_model
 
 # TODO: get the real scratch path
 SCRATCH_PATH = '/home/olpc/Activities/Scratch.activity'
@@ -138,6 +142,14 @@ class WriteBooksActivity(activity.Activity):
 
         stop_button = StopButton(self)
         toolbar_box.toolbar.insert(stop_button, -1)
+
+        # add export buttons
+        activity_toolbar = activity_button.props.page
+        epub_button = ToolButton('save-as-epub')
+        epub_button.set_tooltip(_('Save as EPUB book'))
+        epub_button.connect('clicked', self.__save_ebook_clicked_cb)
+        activity_toolbar.insert(epub_button, -1)
+        epub_button.show()
 
         self.set_toolbar_box(toolbar_box)
         toolbar_box.show_all()
@@ -418,6 +430,41 @@ class WriteBooksActivity(activity.Activity):
     def __text_changed_cb(self, texteditor):
         self._book_model.set_page_text(self._actual_page,
                                        texteditor.get_text())
+
+    def __save_ebook_clicked_cb(self, button):
+        epub_file_name = create_ebub_from_book_model(
+            self.metadata['title'], self._book_model)
+
+        # create a new journal item
+        fileObject = datastore.create()
+        fileObject.metadata['title'] = \
+            _('"%s" as book') % self.metadata['title']
+        fileObject.metadata['mime_type'] = 'application/epub+zip'
+
+        full_text = ''
+        for page in self._book_model.get_pages():
+            full_text += page.text + '\n'
+        fileObject.metadata['fulltext'] = full_text
+        fileObject.metadata['icon-color'] = self.metadata['icon-color']
+        fileObject.metadata['keep'] = self.metadata.get('keep', '0')
+
+        fileObject.metadata['preview'] = self.metadata['preview']
+        fileObject.file_path = epub_file_name
+
+        # store the journal item
+        datastore.write(fileObject, transfer_ownership=True)
+        fileObject.destroy()
+        del fileObject
+        shutil.rmtree(os.path.dirname(epub_file_name))
+
+        alert = NotifyAlert(10)
+        alert.props.title = _('Book created')
+        alert.props.msg = _('You can read the book in your Journal')
+        alert.connect('response', self.__book_saved_alert_response_cb)
+        self.add_alert(alert)
+
+    def __book_saved_alert_response_cb(self, alert, response_id):
+        self.remove_alert(alert)
 
 
 class TextEditor(Gtk.TextView):
