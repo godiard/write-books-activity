@@ -1,6 +1,6 @@
 [Activity]
 name = WriteBooks
-activity_version = 1
+activity_version = 2
 bundle_id = org.sugarlabs.WriteBooks
 exec = sugar-activity activity.WriteBooksActivity
 icon = writebooks
