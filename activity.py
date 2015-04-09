@@ -247,8 +247,15 @@ class WriteBooksActivity(activity.Activity):
         self._edit_toolbar.redo.connect('clicked', self.__redo_clicked_cb)
 
     def __copy_clicked_cb(self, button):
-        self._text_editor.get_buffer().copy_clipboard(
-            Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD))
+        if self._text_editor.get_buffer().get_has_selection():
+            self._text_editor.get_buffer().copy_clipboard(
+                Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD))
+        elif self._image_canvas.is_image_active():
+            # if not text is selected
+            # and a image is selected, copy as pixbuf
+            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+            pxb = self._image_canvas.create_pixbuf_with_active_image()
+            clipboard.set_image(pxb)
 
     def __paste_clicked_cb(self, button):
         self._text_editor.get_buffer().paste_clipboard(
