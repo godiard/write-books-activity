@@ -9,6 +9,7 @@ import random
 import tempfile
 from gettext import gettext as _
 
+from sugar3 import mime
 from sugar3 import profile
 
 from imagecanvas import ImageCanvas
@@ -90,6 +91,8 @@ def create_ebub_from_book_model(title, book_model):
     files = [os.path.join(root_directory, 'title.html'),
              os.path.join(root_directory, 'pages.html')]
     logging.error('Adding files %s', files)
+    if book_model.cover_path:
+        factory.set_cover_image(book_model.cover_path)
     factory.make_epub(files, images=images)
     epub_file_name = factory.create_archive()
     factory.clean()
@@ -108,6 +111,9 @@ class EpubFactory():
         self._language = language
         self._cover_image = None
         self._list_files = None
+
+    def set_cover_image(self, cover_image):
+        self._cover_image = cover_image
 
     def make_epub(self, file_list, images=None):
         self._list_files = file_list
@@ -163,7 +169,35 @@ class EpubFactory():
             content_file_list.append(
                 os.path.join('css', os.path.basename(css_name)))
 
+        if self._cover_image:
+            self._local_cover_image_path = os.path.join(
+                self.root_directory, 'OEBPS',
+                os.path.basename(self._cover_image))
+            shutil.copyfile(
+                self._cover_image, self._local_cover_image_path)
+            self._create_html_cover()
+
         self.create_content_file(oebps_dir, content_file_list)
+
+    def _create_html_cover(self):
+        html_cover_template = """
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+            "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+          <head>
+            <title>Cover</title>
+            <style type="text/css"> img {max-width: 100%%} </style>
+          </head>
+          <body>
+            <div id="cover-image">
+              <img src="%s" alt="Title"/>
+            </div>
+          </body>
+        </html>"""
+
+        file_name = os.path.join(self.root_directory, 'OEBPS', 'cover.html')
+        with open(file_name, 'w') as fd:
+            fd.write(html_cover_template % os.path.basename(self._cover_image))
 
     def create_mimetype_file(self):
         file_name = self.root_directory + "/mimetype"
@@ -184,6 +218,23 @@ class EpubFactory():
         fd.write('</container>')
         fd.close()
 
+    def _guess_mime(self, file_name):
+        logging.error('_guess_mime %s', file_name)
+        mime_type = None
+        if file_name.endswith('.html') or file_name.endswith('.htm'):
+            mime_type = 'application/xhtml+xml'
+        elif file_name.endswith('.css'):
+            mime_type = 'text/css'
+        elif file_name.endswith('.png'):
+            mime_type = 'image/png'
+        elif file_name.endswith('.jpg') or file_name.endswith('.jpeg'):
+            mime_type = 'image/jpeg'
+        elif file_name.endswith('.gif'):
+            mime_type = 'image/gif'
+        if mime is None:
+            mime_type = mime.get_for_file(file_name)
+        return mime_type
+
     def create_content_file(self, oebps_dir, file_list):
         fd = open(oebps_dir + "/content.opf", 'w')
 
@@ -199,7 +250,9 @@ class EpubFactory():
         fd.write('<dc:identifier id="bookid">' +
                  'urn:uuid:%s</dc:identifier>\n' % self._id)
         fd.write('<dc:language>%s</dc:language>\n' % self._language)
-        fd.write('<meta name="cover" content="%s"/>\n' % self._cover_image)
+        if self._cover_image:
+            fd.write('<meta name="cover" content="%s"/>\n' %
+                     os.path.basename(self._cover_image))
         fd.write('</metadata>\n')
 
         # manifest
@@ -208,8 +261,11 @@ class EpubFactory():
                  'media-type="application/x-dtbncx+xml"/>\n')
 
         if self._cover_image is not None:
-            fd.write('<item id="cover" href="title.html" ' +
+            fd.write('<item id="cover" href="cover.html" ' +
                      'media-type="application/xhtml+xml"/>\n')
+            cover_mime = self._guess_mime(self._cover_image)
+            fd.write('<item id="cover-image" href="%s" media-type="%s"/>\n' %
+                     (os.path.basename(self._cover_image), cover_mime))
 
         count = 0
         spine_elements = []
@@ -218,25 +274,14 @@ class EpubFactory():
             if count > 0:
                 content_id = 'content%d' % count
 
-            if file_name.endswith('.html') or file_name.endswith('.htm'):
-                mime = 'application/xhtml+xml'
+            mime = self._guess_mime(file_name)
+            if mime == 'application/xhtml+xml':
                 spine_elements.append(content_id)
-            elif file_name.endswith('.css'):
-                mime = 'text/css'
-            elif file_name.endswith('.png'):
-                mime = 'image/png'
-            elif file_name.endswith('.jpg') or file_name.endswith('.jpeg'):
-                mime = 'image/jpeg'
-            elif file_name.endswith('.gif'):
-                mime = 'image/gif'
 
             fd.write('<item id="%s" href="%s" ' % (content_id, file_name) +
                      'media-type="%s"/>\n' % mime)
             count = count + 1
 
-        if self._cover_image is not None:
-            fd.write('<item id="cover-image" href="images/cover.png" ' +
-                     'media-type="image/png"/>\n')
         fd.write('</manifest>\n')
 
         # spine
@@ -250,7 +295,7 @@ class EpubFactory():
         # guide
         fd.write('<guide>\n')
         if self._cover_image is not None:
-            fd.write('<reference href="title.html" type="cover" ' +
+            fd.write('<reference href="cover.html" type="cover" ' +
                      'title="Cover"/>\n')
         fd.write('</guide>\n')
         fd.write('</package>\n')
@@ -283,7 +328,7 @@ class EpubFactory():
             fd.write('<navLabel>\n')
             fd.write('<text>Book cover</text>\n')
             fd.write('</navLabel>\n')
-            fd.write('<content src="title.html"/>\n')
+            fd.write('<content src="cover.html"/>\n')
             fd.write('</navPoint>\n')
             np = np + 1
 

@@ -38,6 +38,7 @@ from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics.toggletoolbutton import ToggleToolButton
 from sugar3.graphics.alert import ConfirmationAlert
 from sugar3.graphics.alert import NotifyAlert
+from sugar3.graphics.alert import Alert
 from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
 from sugar3.graphics.objectchooser import ObjectChooser
@@ -46,6 +47,7 @@ try:
 except:
     FILTER_TYPE_GENERIC_MIME = 'generic_mime'
 from sugar3 import profile
+from sugar3 import mime
 from sugar3.datastore import datastore
 
 from imagecanvas import ImageCanvas
@@ -432,6 +434,59 @@ class WriteBooksActivity(activity.Activity):
                                        texteditor.get_text())
 
     def __save_ebook_clicked_cb(self, button):
+        alert = Alert()
+        alert.props.title = _('Book creation')
+        alert.props.msg = _('Do you want to add an image for the cover?')
+        icon = Icon(icon_name='dialog-ok')
+        alert.add_button(Gtk.ResponseType.YES, _('Yes'), icon)
+        icon.show()
+        icon = Icon(icon_name='dialog-cancel')
+        alert.add_button(Gtk.ResponseType.NO, _('No'), icon)
+        icon.show()
+        alert.connect('response', self.__add_cover_response_cb,
+                      self._set_cover_and_create_book)
+        self.add_alert(alert)
+
+    def __add_cover_response_cb(self, alert, response_id, operation_function):
+        if response_id == Gtk.ResponseType.YES:
+            try:
+                chooser = ObjectChooser(self, what_filter='Image',
+                                        filter_type=FILTER_TYPE_GENERIC_MIME,
+                                        show_preview=True)
+            except:
+                # for compatibility with older versions
+                chooser = ObjectChooser(self, what_filter='Image')
+
+            try:
+                result = chooser.run()
+                if result == Gtk.ResponseType.ACCEPT:
+                    logging.error('ObjectChooser: %r' %
+                                  chooser.get_selected_object())
+                    jobject = chooser.get_selected_object()
+                    if jobject and jobject.file_path:
+                        logging.error("imagen seleccionada: %s",
+                                      jobject.file_path)
+                        mime_type = mime.get_for_file(jobject.file_path)
+                        extension = mime.get_primary_extension(mime_type)
+                        tempfile_name = \
+                            os.path.join(
+                                self.get_activity_root(), 'instance',
+                                'tmp%i.%s' % (time.time(), extension))
+                        os.link(jobject.file_path, tempfile_name)
+                        operation_function(tempfile_name)
+            finally:
+                chooser.destroy()
+                del chooser
+
+        elif response_id == Gtk.ResponseType.NO:
+            self._save_epub()
+        self.remove_alert(alert)
+
+    def _set_cover_and_create_book(self, cover_file_name):
+        self._book_model.cover_path = cover_file_name
+        self._save_epub()
+
+    def _save_epub(self):
         epub_file_name = create_ebub_from_book_model(
             self.metadata['title'], self._book_model)
 

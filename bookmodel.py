@@ -10,6 +10,7 @@ from sugar3.activity import activity
 class BookModel():
 
     def __init__(self):
+        self.cover_path = None
         self._pages = [Page()]
 
     def get_pages(self):
@@ -82,6 +83,7 @@ class BookModel():
 
         book_data = {}
         book_data['version'] = '1'
+        book_data['cover_path'] = self.cover_path
 
         pages = []
         for page in self._pages:
@@ -116,7 +118,11 @@ class BookModel():
         z = zipfile.ZipFile(file_path, 'w')
         z.write(os.path.join(instance_path, data_file_name), data_file_name)
 
-        # zip the iages
+        # zip the cover image
+        if self.cover_path and os.path.exists(self.cover_path):
+            z.write(self.cover_path, os.path.basename(self.cover_path))
+
+        # zip the pages
         for page in self._pages:
             if page.background_path is not None and \
                     page.background_path != '':
@@ -150,6 +156,7 @@ class BookModel():
         with open(os.path.join(instance_path, data_file_path)) as f:
             book_data = json.load(f)
 
+        self.cover_path = book_data['cover_path']
         self._pages = []
         for page_data in book_data['pages']:
             page = Page()
