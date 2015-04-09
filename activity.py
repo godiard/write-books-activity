@@ -37,7 +37,6 @@ from sugar3.graphics.toolbarbox import ToolbarButton
 from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics.toggletoolbutton import ToggleToolButton
 from sugar3.graphics.alert import ConfirmationAlert
-from sugar3.graphics.alert import NotifyAlert
 from sugar3.graphics.alert import Alert
 from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
@@ -508,17 +507,35 @@ class WriteBooksActivity(activity.Activity):
 
         # store the journal item
         datastore.write(fileObject, transfer_ownership=True)
+        book_object_id = fileObject.object_id
+
         fileObject.destroy()
         del fileObject
         shutil.rmtree(os.path.dirname(epub_file_name))
 
-        alert = NotifyAlert(10)
-        alert.props.title = _('Book created')
-        alert.props.msg = _('You can read the book in your Journal')
-        alert.connect('response', self.__book_saved_alert_response_cb)
-        self.add_alert(alert)
+        finish_alert = Alert()
+        finish_alert.props.title = _('Book created')
+        finish_alert.props.msg = _('You can read the book in your Journal')
+        open_icon = Icon(icon_name='zoom-activity')
+        finish_alert.add_button(Gtk.ResponseType.APPLY,
+                                _('Show in Journal'), open_icon)
+        open_icon.show()
+        ok_icon = Icon(icon_name='dialog-ok')
+        finish_alert.add_button(Gtk.ResponseType.OK, _('Ok'), ok_icon)
+        ok_icon.show()
+        # Remove other alerts
+        for alert in self._alerts:
+            self.remove_alert(alert)
 
-    def __book_saved_alert_response_cb(self, alert, response_id):
+        self.add_alert(finish_alert)
+        finish_alert.connect('response', self.__book_saved_alert_response_cb,
+                             book_object_id)
+        finish_alert.show()
+
+    def __book_saved_alert_response_cb(self, alert, response_id,
+                                       book_object_id):
+        if response_id is Gtk.ResponseType.APPLY:
+            activity.show_object_in_journal(book_object_id)
         self.remove_alert(alert)
 
 
