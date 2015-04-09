@@ -88,8 +88,10 @@ def create_ebub_from_book_model(title, book_model):
 
     # TODO: put real language
     factory = EpubFactory(title, author, 'en')
-    files = [os.path.join(root_directory, 'title.html'),
-             os.path.join(root_directory, 'pages.html')]
+    files = [{'title': 'Title',
+              'filename': os.path.join(root_directory, 'title.html')},
+             {'title': 'Content',
+              'filename': os.path.join(root_directory, 'pages.html')}]
     logging.error('Adding files %s', files)
     if book_model.cover_path:
         factory.set_cover_image(book_model.cover_path)
@@ -138,7 +140,8 @@ class EpubFactory():
         if images is not None:
             self.images = images
         self.css = []
-        for file_name in file_list:
+        for file_data in file_list:
+            file_name = file_data['filename']
             shutil.copyfile(
                 file_name,
                 os.path.join(self.root_directory, 'OEBPS',
@@ -150,7 +153,8 @@ class EpubFactory():
             os.mkdir(os.path.join(oebps_dir, 'css'))
 
         content_file_list = []
-        for file_name in file_list:
+        for file_data in file_list:
+            file_name = file_data['filename']
             content_file_list.append(os.path.basename(file_name))
 
         for img_name in self.images:
@@ -332,12 +336,13 @@ class EpubFactory():
             fd.write('</navPoint>\n')
             np = np + 1
 
-        for file_name in file_list:
+        for file_data in file_list:
             fd.write('<navPoint id="navpoint-%d" playOrder="%d">\n' % (np, np))
             fd.write('<navLabel>\n')
-            fd.write('<text>Contents</text>\n')
+            fd.write('<text>%s</text>\n' % file_data['title'])
             fd.write('</navLabel>\n')
-            fd.write('<content src="%s"/>\n' % os.path.basename(file_name))
+            fd.write('<content src="%s"/>\n' % os.path.basename(
+                file_data['filename']))
             fd.write('</navPoint>\n')
             np = np + 1
 
