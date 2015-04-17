@@ -8,86 +8,88 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-04-17 09:38-0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2015-04-17 13:16+0000\n"
+"Last-Translator: Gonzalo <godiard@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.11.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.5.1.1\n"
+"X-POOTLE-MTIME: 1429276570.000000\n"
 
 #: activity/activity.info:2
 msgid "WriteBooks"
-msgstr ""
+msgstr "EscribeLibros"
 
 #: activity.py:92
 msgid "Set the background"
-msgstr ""
+msgstr "Selecciona el fondo"
 
 #: activity.py:98
 msgid "Add a picture"
-msgstr ""
+msgstr "Agrega una imagen"
 
 #: activity.py:109
 msgid "Duplicate page"
-msgstr ""
+msgstr "Duplica página"
 
 #: activity.py:115
 msgid "Add a page"
-msgstr ""
+msgstr "Agrega una página"
 
 #: activity.py:120
 msgid "Remove a image or page"
-msgstr ""
+msgstr "Borra una imagen o página"
 
 #: activity.py:125
 msgid "Previous page"
-msgstr ""
+msgstr "Página anterior"
 
 #: activity.py:130
 msgid "Next page"
-msgstr ""
+msgstr "Página siguiente"
 
 #: activity.py:135
 msgid "View pages"
-msgstr ""
+msgstr "Ver páginas"
 
 #: activity.py:150
 msgid "Save as EPUB book"
-msgstr ""
+msgstr "Grabar como un libro EPUB"
 
 #: activity.py:272
 msgid "Indoors"
-msgstr ""
+msgstr "Interiores"
 
 #: activity.py:273
 msgid "Nature"
-msgstr ""
+msgstr "Naturaleza"
 
 #: activity.py:274
 msgid "Outdoors"
-msgstr ""
+msgstr "Exteriores"
 
 #: activity.py:275
 msgid "Sports"
-msgstr ""
+msgstr "Deportes"
 
 #: activity.py:278
 msgid "Select a background"
-msgstr ""
+msgstr "Selecciona un fondo"
 
 #: activity.py:328
 msgid "Animals"
-msgstr ""
+msgstr "Animales"
 
 #: activity.py:329
 msgid "Fantasy"
-msgstr ""
+msgstr "Fantasía"
 
 #: activity.py:330
 msgid "Letters"
-msgstr ""
+msgstr "Letras"
 
 #: activity.py:331
 msgid "People"
@@ -127,77 +129,77 @@ msgstr ""
 
 #: activity.py:450
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: activity.py:502
 #, python-format
 msgid "\"%s\" as book"
-msgstr ""
+msgstr "\"%s\" como libro"
 
 #: activity.py:524
 msgid "Book created"
-msgstr ""
+msgstr "Libro creado"
 
 #: activity.py:525
 msgid "You can read the book in your Journal"
-msgstr ""
+msgstr "Puedes leer el libro en tu Diario"
 
 #: activity.py:528
 msgid "Show in Journal"
-msgstr ""
+msgstr "Ver en el Diario"
 
 #: activity.py:531
 msgid "Ok"
-msgstr ""
+msgstr "Aceptar"
 
 #: iconview.py:246 tmp/listview.py:390
 msgid "Your Journal is empty"
-msgstr ""
+msgstr "Tu Diario está vacío"
 
 #: iconview.py:249 tmp/listview.py:393
 msgid "Your documents folder is empty"
-msgstr ""
+msgstr "Tu directorio documentos está vacío"
 
 #: iconview.py:251 tmp/listview.py:395
 msgid "The device is empty"
-msgstr ""
+msgstr "Tu dispositivo está vacío"
 
 #: iconview.py:254 tmp/listview.py:397
 msgid "No matching entries"
-msgstr ""
+msgstr "No hay entradas coincidentes"
 
 #: iconview.py:336 tmp/listview.py:483
 msgid "Clear search"
-msgstr ""
+msgstr "Vaciar búsqueda"
 
 #: imagechooser.py:209
 msgid "Select from the Journal"
-msgstr ""
+msgstr "Seleccionar desde el Diario"
 
 #: imagechooser.py:215
 msgid "Choose an image"
-msgstr ""
+msgstr "Elige una imagen"
 
 #: imagechooser.py:222
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
 
 #: imagechooser.py:254
 msgid "Search"
-msgstr ""
+msgstr "Buscar"
 
 #: imagechooser.py:264
 msgid "Back"
-msgstr ""
+msgstr "Atrás"
 
 #: iconmodel.py:108
 msgid "Untitled"
-msgstr ""
+msgstr "Sin título"
 
 #: epubfactory.py:53
 #, python-format
 msgid "by %s"
-msgstr ""
+msgstr "por %s"
 
 #: tmp/palettes.py:96
 #, python-format
