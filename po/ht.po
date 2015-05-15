@@ -5,201 +5,201 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-04-17 09:38-0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2015-05-11 09:38-0800\n"
 "Language: ht\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.11.0\n"
+"X-Generator: Poedit 1.7.6\n"
+"Last-Translator: \n"
+"Language-Team: \n"
 
 #: activity/activity.info:2
 msgid "WriteBooks"
-msgstr ""
+msgstr "EkriLiv"
 
 #: activity.py:92
 msgid "Set the background"
-msgstr ""
+msgstr "Mete fon an"
 
 #: activity.py:98
 msgid "Add a picture"
-msgstr ""
+msgstr "Ajoute yon imaj"
 
 #: activity.py:109
 msgid "Duplicate page"
-msgstr ""
+msgstr "Repete paj la"
 
 #: activity.py:115
 msgid "Add a page"
-msgstr ""
+msgstr "Ajoute yon paj"
 
 #: activity.py:120
 msgid "Remove a image or page"
-msgstr ""
+msgstr "Retire yon imaj oubyen yon paj"
 
 #: activity.py:125
 msgid "Previous page"
-msgstr ""
+msgstr "Paj anvan"
 
 #: activity.py:130
 msgid "Next page"
-msgstr ""
+msgstr "Paj pwochen"
 
 #: activity.py:135
 msgid "View pages"
-msgstr ""
+msgstr "Gade paj yo"
 
 #: activity.py:150
 msgid "Save as EPUB book"
-msgstr ""
+msgstr "Sovgade kòm liv EPUB"
 
 #: activity.py:272
 msgid "Indoors"
-msgstr ""
+msgstr "Andedan"
 
 #: activity.py:273
 msgid "Nature"
-msgstr ""
+msgstr "Lanati"
 
 #: activity.py:274
 msgid "Outdoors"
-msgstr ""
+msgstr "Deyò"
 
 #: activity.py:275
 msgid "Sports"
-msgstr ""
+msgstr "Espò"
 
 #: activity.py:278
 msgid "Select a background"
-msgstr ""
+msgstr "Chwazi yon fon"
 
 #: activity.py:328
 msgid "Animals"
-msgstr ""
+msgstr "Bèt"
 
 #: activity.py:329
 msgid "Fantasy"
-msgstr ""
+msgstr "Imajinasyon"
 
 #: activity.py:330
 msgid "Letters"
-msgstr ""
+msgstr "Lèt"
 
 #: activity.py:331
 msgid "People"
-msgstr ""
+msgstr "Moun"
 
 #: activity.py:332
 msgid "Things"
-msgstr ""
+msgstr "Bagay"
 
 #: activity.py:333
 msgid "Transportation"
-msgstr ""
+msgstr "Transpò"
 
 #: activity.py:337
 msgid "Select a image to add"
-msgstr ""
+msgstr "Chwazi yon imaj pou ajoute"
 
 #: activity.py:351
 msgid "Do you want remove the selected image?"
-msgstr ""
+msgstr "Èske ou vle retire imaj w te chwazi a?"
 
 #: activity.py:358
 msgid "Do you want remove the page?"
-msgstr ""
+msgstr "Èske ou vle retire paj la?"
 
 #: activity.py:444
 msgid "Book creation"
-msgstr ""
+msgstr "Kreye Liv"
 
 #: activity.py:445
 msgid "Do you want to add an image for the cover?"
-msgstr ""
+msgstr "Èske ou vle ajoute yon imaj pou kouvèti a?"
 
 #: activity.py:447
 msgid "Yes"
-msgstr ""
+msgstr "Wi"
 
 #: activity.py:450
 msgid "No"
-msgstr ""
+msgstr "Non"
 
 #: activity.py:502
 #, python-format
 msgid "\"%s\" as book"
-msgstr ""
+msgstr "\"%s\" kòm liv"
 
 #: activity.py:524
 msgid "Book created"
-msgstr ""
+msgstr "Liv pare"
 
 #: activity.py:525
 msgid "You can read the book in your Journal"
-msgstr ""
+msgstr "Ou ka li liv la nan Jounal ou"
 
 #: activity.py:528
 msgid "Show in Journal"
-msgstr ""
+msgstr "Montre nan Jounal"
 
 #: activity.py:531
 msgid "Ok"
-msgstr ""
+msgstr "Dakò"
 
 #: iconview.py:246 tmp/listview.py:390
 msgid "Your Journal is empty"
-msgstr ""
+msgstr "Jounal ou vid"
 
 #: iconview.py:249 tmp/listview.py:393
 msgid "Your documents folder is empty"
-msgstr ""
+msgstr "Dosye dokiman ou vid"
 
 #: iconview.py:251 tmp/listview.py:395
 msgid "The device is empty"
-msgstr ""
+msgstr "Aparèy la vid"
 
 #: iconview.py:254 tmp/listview.py:397
 msgid "No matching entries"
-msgstr ""
+msgstr "Pa gen bagay ki sanble sa"
 
 #: iconview.py:336 tmp/listview.py:483
 msgid "Clear search"
-msgstr ""
+msgstr "Efase rechèch"
 
 #: imagechooser.py:209
 msgid "Select from the Journal"
-msgstr ""
+msgstr "Chwazi soti nan Jounal la"
 
 #: imagechooser.py:215
 msgid "Choose an image"
-msgstr ""
+msgstr "Chwazi yon imaj"
 
 #: imagechooser.py:222
 msgid "Close"
-msgstr ""
+msgstr "Fèmen"
 
 #: imagechooser.py:254
 msgid "Search"
-msgstr ""
+msgstr "Chèche"
 
 #: imagechooser.py:264
 msgid "Back"
-msgstr ""
+msgstr "Retounen"
 
 #: iconmodel.py:108
 msgid "Untitled"
-msgstr ""
+msgstr "San tit"
 
 #: epubfactory.py:53
 #, python-format
 msgid "by %s"
-msgstr ""
+msgstr "pa %s"
 
 #: tmp/palettes.py:96
 #, python-format
 msgid "%(free_space)d MB Free"
-msgstr ""
+msgstr "%(free_space)d MB Disponib"
