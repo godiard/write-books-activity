@@ -156,7 +156,8 @@ class ImageFileChooser(Gtk.Window):
             origin = category_paths[0]
             category = origin[origin.rfind('/') + 1:]
             category_directory = os.path.join(self._main_path, category)
-            os.symlink(origin, category_directory)
+            if not os.path.exists(category_directory):
+                os.symlink(origin, category_directory)
         else:
             if self._translations is None:
                 category_directory = os.path.join(self._main_path, category)
