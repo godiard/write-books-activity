@@ -65,6 +65,7 @@ SCRATCH_BACKGROUNDS_PATH = SCRATCH_PATH + '/Media/Backgrounds'
 
 SCRATCH_COSTUMES_PATH = SCRATCH_PATH + '/Media/Costumes'
 
+TUXPAINT_STAMPS_PATH = '/usr/share/tuxpaint/stamps'
 
 class WriteBooksActivity(activity.Activity):
 
@@ -351,13 +352,22 @@ class WriteBooksActivity(activity.Activity):
 
     def __add_image_clicked_cb(self, button):
         categories = {
-            _('Animals'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Animals')],
-            _('Fantasy'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Fantasy')],
+            _('Animals'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Animals'),
+                           os.path.join(TUXPAINT_STAMPS_PATH, 'animals')],
+            _('Fantasy'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Fantasy'),
+                           os.path.join(TUXPAINT_STAMPS_PATH, 'cartoon')],
             _('Letters'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Letters')],
-            _('People'): [os.path.join(SCRATCH_COSTUMES_PATH, 'People')],
-            _('Things'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Things')],
-            _('Transportation'): [os.path.join(SCRATCH_COSTUMES_PATH,
-                                               'Transportation')]}
+            _('People'): [os.path.join(SCRATCH_COSTUMES_PATH, 'People'),
+                          os.path.join(TUXPAINT_STAMPS_PATH, 'people')],
+            _('Things'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Things'),
+                          os.path.join(TUXPAINT_STAMPS_PATH, 'clothes'),
+                          os.path.join(TUXPAINT_STAMPS_PATH, 'hobbies'),
+                          os.path.join(TUXPAINT_STAMPS_PATH, 'medical'),
+                          os.path.join(TUXPAINT_STAMPS_PATH, 'household'),
+                          os.path.join(TUXPAINT_STAMPS_PATH, 'food')],
+            _('Transportation'): [
+                os.path.join(SCRATCH_COSTUMES_PATH, 'Transportation'),
+                os.path.join(TUXPAINT_STAMPS_PATH, 'vehicles')]}
 
         chooser = ImageFileChooser(image_type='actors',
                                    title=_('Select a image to add'),
