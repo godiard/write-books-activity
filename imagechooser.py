@@ -252,7 +252,8 @@ class ImageFileChooser(Gtk.Window):
     def __visibility_notify_event_cb(self, window, event):
         logging.debug('visibility_notify_event_cb %r', self)
         visible = event.get_state() == Gdk.VisibilityState.FULLY_OBSCURED
-        self._icon_view.set_is_visible(visible)
+        if self._icon_view:
+            self._icon_view.set_is_visible(visible)
 
     def __clear_clicked_cb(self, list_view):
         self._toolbar.clear_query()
