@@ -67,6 +67,7 @@ SCRATCH_COSTUMES_PATH = SCRATCH_PATH + '/Media/Costumes'
 
 TUXPAINT_STAMPS_PATH = '/usr/share/tuxpaint/stamps'
 
+
 class WriteBooksActivity(activity.Activity):
 
     def __init__(self, handle):
@@ -303,12 +304,15 @@ class WriteBooksActivity(activity.Activity):
                                    title=_('Select a background'),
                                    categories=categories,
                                    language=self._language,
-                                   translations=self._translations)
+                                   translations=self._translations,
+                                   parent=self.get_window())
         chooser.connect('response', self.__chooser_response_cb,
                         self._change_background)
+        self.set_sensitive(False)
         chooser.show()
 
     def __chooser_response_cb(self, chooser, response_id, operation_function):
+        self.set_sensitive(True)
         if response_id == Gtk.ResponseType.ACCEPT:
             logging.error('selected %s', chooser.get_selected_object_id())
             file_path = chooser.get_selected_object_id()
@@ -373,9 +377,11 @@ class WriteBooksActivity(activity.Activity):
                                    title=_('Select a image to add'),
                                    categories=categories,
                                    language=self._language,
-                                   translations=self._translations)
+                                   translations=self._translations,
+                                   parent=self.get_window())
         chooser.connect('response', self.__chooser_response_cb,
                         self._add_image)
+        self.set_sensitive(False)
         chooser.show()
 
     def _add_image(self, file_name):
