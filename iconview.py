@@ -31,6 +31,8 @@ from iconmodel import IconModel
 
 PREVIEW_SIZE = style.zoom(300) / 2, style.zoom(225) / 2
 
+_pixbuf_cache = {}
+
 
 def get_preview_pixbuf(preview_path, width=-1, height=-1):
     """Retrive a pixbuf with the content of the preview field
@@ -51,8 +53,12 @@ def get_preview_pixbuf(preview_path, width=-1, height=-1):
     if height == -1:
         height = PREVIEW_SIZE[1]
 
+    if preview_path in _pixbuf_cache:
+        return _pixbuf_cache[preview_path]
+
     pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
         preview_path, width, height)
+    _pixbuf_cache[preview_path] = pixbuf
     return pixbuf
 
 
