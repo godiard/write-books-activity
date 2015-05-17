@@ -78,6 +78,29 @@ class WriteBooksActivity(activity.Activity):
         # make the share option insensitive
         self.max_participants = 1
 
+        # get the language configured by the user
+        # will be used to translate the names of the media files
+        locale = os.environ.get('LANG', '')
+        language_location = locale.split('.', 1)[0].lower()
+        self._language = language_location.split('_')[0]
+        if self._language == 'en':
+            # we don't need translate the file names if langauage is 'en'
+            self._language = None
+        self._translations = None
+        if self._language is not None:
+            # read the translations file if available
+            dict_path = os.path.join(activity.get_bundle_path(), 'data',
+                                     "%s_dict.csv" % self._language)
+            logging.debug('Looking for media translation dictionary %s',
+                          dict_path)
+            if os.path.exists(dict_path):
+                logging.debug('Loading translations')
+                self._translations = {}
+                with open(dict_path) as dict_file:
+                    for line in dict_file:
+                        words = line.split(',')
+                        self._translations[words[0]] = words[1].strip()
+
         toolbar_box = ToolbarBox()
 
         activity_button = ActivityToolbarButton(self)
@@ -269,14 +292,17 @@ class WriteBooksActivity(activity.Activity):
 
     def __set_background_clicked_cb(self, button):
         categories = {
-            _('Indoors'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Indoors'),
-            _('Nature'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Nature'),
-            _('Outdoors'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Outdoors'),
-            _('Sports'): os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Sports')}
+            _('Indoors'): [os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Indoors')],
+            _('Nature'): [os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Nature')],
+            _('Outdoors'):
+                [os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Outdoors')],
+            _('Sports'): [os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Sports')]}
 
         chooser = ImageFileChooser(path=SCRATCH_BACKGROUNDS_PATH,
                                    title=_('Select a background'),
-                                   categories=categories)
+                                   categories=categories,
+                                   language=self._language,
+                                   translations=self._translations)
         chooser.connect('response', self.__chooser_response_cb,
                         self._change_background)
         chooser.show()
@@ -325,17 +351,19 @@ class WriteBooksActivity(activity.Activity):
 
     def __add_image_clicked_cb(self, button):
         categories = {
-            _('Animals'): os.path.join(SCRATCH_COSTUMES_PATH, 'Animals'),
-            _('Fantasy'): os.path.join(SCRATCH_COSTUMES_PATH, 'Fantasy'),
-            _('Letters'): os.path.join(SCRATCH_COSTUMES_PATH, 'Letters'),
-            _('People'): os.path.join(SCRATCH_COSTUMES_PATH, 'People'),
-            _('Things'): os.path.join(SCRATCH_COSTUMES_PATH, 'Things'),
-            _('Transportation'): os.path.join(SCRATCH_COSTUMES_PATH,
-                                              'Transportation')}
+            _('Animals'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Animals')],
+            _('Fantasy'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Fantasy')],
+            _('Letters'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Letters')],
+            _('People'): [os.path.join(SCRATCH_COSTUMES_PATH, 'People')],
+            _('Things'): [os.path.join(SCRATCH_COSTUMES_PATH, 'Things')],
+            _('Transportation'): [os.path.join(SCRATCH_COSTUMES_PATH,
+                                               'Transportation')]}
 
         chooser = ImageFileChooser(path=SCRATCH_COSTUMES_PATH,
                                    title=_('Select a image to add'),
-                                   categories=categories)
+                                   categories=categories,
+                                   language=self._language,
+                                   translations=self._translations)
         chooser.connect('response', self.__chooser_response_cb,
                         self._add_image)
         chooser.show()

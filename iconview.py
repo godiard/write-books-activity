@@ -240,19 +240,9 @@ class IconView(Gtk.Bin):
         self.icon_view.props.vadjustment.value_changed()
 
         if len(tree_model) == 0:
-            documents_path = model.get_documents_path()
-            if self._is_query_empty():
-                if self._query['mountpoints'] == ['/']:
-                    self._show_message(_('Your Journal is empty'))
-                elif documents_path and self._query['mountpoints'] == \
-                        [documents_path]:
-                    self._show_message(_('Your documents folder is empty'))
-                else:
-                    self._show_message(_('The device is empty'))
-            else:
-                self._show_message(
-                    _('No matching entries'),
-                    show_clear_query=self._toolbar.is_filter_changed())
+            self._show_message(
+                _('No matching entries'),
+                show_clear_query=self._toolbar.is_filter_changed())
         else:
             self._clear_message()
 

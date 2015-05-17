@@ -319,8 +319,11 @@ class InplaceResultSet(BaseResultSet):
                     'Error reading target of link %r', full_path)
                 return
 
-            if not os.path.abspath(link).startswith(self._mount_point):
-                return
+            # IMPORTANT: we want follow symbolic links outside of the main
+            # directory, are used to implement translations
+
+            # if not os.path.abspath(link).startswith(self._mount_point):
+            #    return
 
             try:
                 stat = os.stat(full_path)

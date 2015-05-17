@@ -16,6 +16,7 @@
 
 from gettext import gettext as _
 import logging
+import os
 
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -29,6 +30,7 @@ from sugar3.graphics.icon import Icon
 from sugar3.graphics import iconentry
 from sugar3 import mime
 from sugar3 import profile
+from sugar3.activity import activity
 
 from iconview import IconView
 
@@ -41,13 +43,17 @@ class ImageFileChooser(Gtk.Window):
         'response': (GObject.SignalFlags.RUN_FIRST, None, ([int])),
     }
 
-    def __init__(self, path, title=None, parent=None, categories=None):
+    def __init__(self, path, title=None, parent=None, categories=None,
+                 language=None, translations=None):
         """
             path (str) -- The path with the images to display
             title (str) -- A optional string to display in the main toolbar
             parent -- the widget calling ObjectChooser
             categories (dict) -- A dictionary with categories and path
                 associated.
+            language (str) --if is not None, is used to try translate
+                the image file names
+            translations (dict) -- is a list of filenames and translated names
         """
         Gtk.Window.__init__(self)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
@@ -57,6 +63,8 @@ class ImageFileChooser(Gtk.Window):
         self.set_has_resize_grip(False)
 
         self._selected_object_id = None
+        self._language = language
+        self._translations = translations
 
         self.add_events(Gdk.EventMask.VISIBILITY_NOTIFY_MASK)
         self.connect('visibility-notify-event',
@@ -118,18 +126,60 @@ class ImageFileChooser(Gtk.Window):
 
         # if categories are defined, show a list of buttons
         # with the categories, when the user press a button,
-        # load the images in the catgories patch
+        # load the images in the catgories path
         self._buttons_vbox = Gtk.VBox()
         for category in self._categories.keys():
             button = Gtk.Button(category)
             button.connect('clicked', self.__category_btn_clicked_cb,
-                           self._categories[category])
+                           category)
             self._buttons_vbox.pack_start(button, False, False, 10)
         self._buttons_vbox.show_all()
         self._vbox.pack_start(self._buttons_vbox, True, True, 0)
 
-    def __category_btn_clicked_cb(self, button, category_path):
-        self.show_icon_view(category_path)
+    def __category_btn_clicked_cb(self, button, category):
+        category_paths = self._categories[category]
+        # category_paths is a array, but we only can show a single
+        # directory using the datastore backend.
+        # we also want be able to show and search by translated names
+        # the solution is create a cached directory with symlinks to
+        # the media found in the category_paths. If a dictionary data file
+        # is found, the filenames for the links will be translated.
+
+        if len(category_paths) == 1 and self._translations is None:
+            # if is only one directory and there are not translations
+            # we don't need create the directory with the links
+            category_directory = category_paths[0]
+        else:
+            if self._translations is None:
+                category_directory = os.path.join(
+                    activity.get_activity_root(), 'data', category)
+            else:
+                category_directory = os.path.join(
+                    activity.get_activity_root(), 'data',
+                    "%s_%s" % (category, self._language))
+            logging.debug('category_directory %s', category_directory)
+            if not os.path.exists(category_directory):
+                os.makedirs(category_directory)
+                # create links for the media files
+                for category_path in category_paths:
+                    for root, dirs, files in os.walk(category_path):
+                        for name in files:
+                            extension = name[name.rfind('.') + 1:].lower()
+                            if extension not in ['jpg', 'png', 'svg']:
+                                continue
+                            origin = os.path.join(root, name)
+                            if self._translations is not None and \
+                                    name in self._translations:
+                                destination = os.path.join(
+                                    category_directory,
+                                    self._translations[name])
+                            else:
+                                destination = os.path.join(category_directory,
+                                                           name)
+                            if not os.path.exists(destination):
+                                os.symlink(origin, destination)
+
+        self.show_icon_view(category_directory)
 
     def show_icon_view(self, path):
         self._vbox.remove(self._buttons_vbox)
