@@ -43,10 +43,12 @@ class ImageFileChooser(Gtk.Window):
         'response': (GObject.SignalFlags.RUN_FIRST, None, ([int])),
     }
 
-    def __init__(self, path, title=None, parent=None, categories=None,
+    def __init__(self, image_type, title=None, parent=None, categories=None,
                  language=None, translations=None):
         """
-            path (str) -- The path with the images to display
+            image_type (str) -- A string identifying the images to show,
+                in the case we are using the imagechooser with differnt groups
+                of images.
             title (str) -- A optional string to display in the main toolbar
             parent -- the widget calling ObjectChooser
             categories (dict) -- A dictionary with categories and path
@@ -97,8 +99,11 @@ class ImageFileChooser(Gtk.Window):
         self._vbox.pack_start(separator, False, True, 0)
         separator.show()
 
-        self._main_path = path
-        self._toolbar = SearchToolbox(path, add_back_button=True)
+        self._main_path = os.path.join(activity.get_activity_root(), 'data',
+                                       image_type)
+        self._image_type = image_type
+
+        self._toolbar = SearchToolbox(self._main_path, add_back_button=True)
         self._toolbar.connect('query-changed', self.__query_changed_cb)
         self._toolbar.connect('go-back', self.__go_back_cb)
         self._toolbar.set_size_request(-1, style.GRID_CELL_SIZE)
@@ -113,7 +118,7 @@ class ImageFileChooser(Gtk.Window):
         self._buttons_vbox = None
         self._categories = categories
         if categories is None:
-            self.show_icon_view(path)
+            self.show_icon_view(self._main_path)
         else:
             self.show_categories_buttons()
 
@@ -148,15 +153,16 @@ class ImageFileChooser(Gtk.Window):
         if len(category_paths) == 1 and self._translations is None:
             # if is only one directory and there are not translations
             # we don't need create the directory with the links
-            category_directory = category_paths[0]
+            origin = category_paths[0]
+            category = origin[origin.rfind('/') + 1:]
+            category_directory = os.path.join(self._main_path, category)
+            os.symlink(origin, category_directory)
         else:
             if self._translations is None:
-                category_directory = os.path.join(
-                    activity.get_activity_root(), 'data', category)
+                category_directory = os.path.join(self._main_path, category)
             else:
                 category_directory = os.path.join(
-                    activity.get_activity_root(), 'data',
-                    "%s_%s" % (category, self._language))
+                    self._main_path, "%s_%s" % (category, self._language))
             logging.debug('category_directory %s', category_directory)
             if not os.path.exists(category_directory):
                 os.makedirs(category_directory)
@@ -227,9 +233,12 @@ class ImageFileChooser(Gtk.Window):
         return self._selected_object_id
 
     def __query_changed_cb(self, toolbar, query):
-        if len(query['query']) < 3:
+        if 'query' in query and len(query['query']) < 3:
             logging.error('Don\'t query with a filter of less than 3 letters'
                           'to avoid big querys, slow in the XO-1')
+            return
+        if query['mountpoints'][0] == self._main_path and 'query' not in query:
+            self.show_categories_buttons()
             return
         if self._icon_view is None:
             self.show_icon_view(self._main_path)

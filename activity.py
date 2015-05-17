@@ -298,7 +298,7 @@ class WriteBooksActivity(activity.Activity):
                 [os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Outdoors')],
             _('Sports'): [os.path.join(SCRATCH_BACKGROUNDS_PATH, 'Sports')]}
 
-        chooser = ImageFileChooser(path=SCRATCH_BACKGROUNDS_PATH,
+        chooser = ImageFileChooser(image_type='backgrounds',
                                    title=_('Select a background'),
                                    categories=categories,
                                    language=self._language,
@@ -359,7 +359,7 @@ class WriteBooksActivity(activity.Activity):
             _('Transportation'): [os.path.join(SCRATCH_COSTUMES_PATH,
                                                'Transportation')]}
 
-        chooser = ImageFileChooser(path=SCRATCH_COSTUMES_PATH,
+        chooser = ImageFileChooser(image_type='actors',
                                    title=_('Select a image to add'),
                                    categories=categories,
                                    language=self._language,
