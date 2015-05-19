@@ -101,6 +101,9 @@ class ImageFileChooser(Gtk.Window):
 
         self._main_path = os.path.join(activity.get_activity_root(), 'data',
                                        image_type)
+        if not os.path.exists(self._main_path):
+            os.makedirs(self._main_path)
+
         self._image_type = image_type
 
         self._toolbar = SearchToolbox(self._main_path, add_back_button=True)
