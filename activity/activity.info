@@ -6,4 +6,5 @@ exec = sugar-activity activity.WriteBooksActivity
 icon = writebooks
 license = GPLv2+
 max_participants = 1
+mime_types = application/x-writebooks-activity
 repository = https://github.com/godiard/write-books-activity.git
