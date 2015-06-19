@@ -223,7 +223,9 @@ class WriteBooksActivity(activity.Activity):
 
         self._scrolled_window = Gtk.ScrolledWindow()
         self._scrolled_window.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        self._scrolled_window.set_size_request(-1, style.GRID_CELL_SIZE * 2)
+        self._scrolled_window.set_size_request(
+            Gdk.Screen.width() - style.GRID_CELL_SIZE * 2,
+            style.GRID_CELL_SIZE * 2)
         self._scrolled_window.set_policy(Gtk.PolicyType.NEVER,
                                          Gtk.PolicyType.AUTOMATIC)
         self._scrolled_window.add(self._text_editor)
@@ -603,7 +605,7 @@ class TextEditor(Gtk.TextView):
         buffer.set_highlight_syntax(False)
         buffer.set_max_undo_levels(30)
 
-        self.set_wrap_mode(Gtk.WrapMode.WORD)
+        self.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         self.set_pixels_above_lines(0)
         self.set_size_request(-1, style.GRID_CELL_SIZE)
 
