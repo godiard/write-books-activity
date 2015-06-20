@@ -106,13 +106,16 @@ class EpubFactory():
 
     def __init__(self, title, creator, language):
         self._title = title
-        self._creator = creator
+        self._creator = self._remove_unsafe_chars(creator)
         random_string = ''.join(random.choice(
             string.ascii_uppercase) for i in range(30))
         self._id = '%s-%s' % (creator, random_string)
         self._language = language
         self._cover_image = None
         self._list_files = None
+
+    def _remove_unsafe_chars(self, message):
+        return message.replace('<', '_').replace('>', '_').replace('&', '_')
 
     def set_cover_image(self, cover_image):
         self._cover_image = cover_image
