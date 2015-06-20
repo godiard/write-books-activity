@@ -86,8 +86,12 @@ def create_ebub_from_book_model(title, book_model):
     with open(os.path.join(root_directory, 'pages.html'), 'w') as html_file:
         html_file.write(html)
 
-    # TODO: put real language
-    factory = EpubFactory(title, author, 'en')
+    lang = os.environ.get('LANG')
+    if lang and len(lang) > 2:
+        lang = lang[:2]
+    else:
+        lang = 'en'
+    factory = EpubFactory(title, author, lang)
     files = [{'title': 'Title',
               'filename': os.path.join(root_directory, 'title.html')},
              {'title': 'Content',
