@@ -255,10 +255,16 @@ class WriteBooksActivity(activity.Activity):
             self._preview_panel.show()
             self._image_canvas.set_editable(False)
             self._text_editor.set_editable(False)
+            self._scrolled_window.set_size_request(
+                (Gdk.Screen.width() * 3 / 4) - style.GRID_CELL_SIZE * 2,
+                style.GRID_CELL_SIZE * 2)
         else:
             self._preview_panel.hide()
             self._image_canvas.set_editable(True)
             self._text_editor.set_editable(True)
+            self._scrolled_window.set_size_request(
+                Gdk.Screen.width() - style.GRID_CELL_SIZE * 2,
+                style.GRID_CELL_SIZE * 2)
 
     def write_file(self, file_path):
         self._book_model.write(file_path)
