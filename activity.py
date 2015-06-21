@@ -616,7 +616,7 @@ class TextEditor(Gtk.TextView):
     def __buffer_changed_cb(self, text_buffer):
         cursor_iter = self.get_buffer().get_iter_at_mark(
             self.get_buffer().get_insert())
-        self.scrll_to_iter(cursor_iter, 0, False, 0, 0)
+        self.scroll_to_iter(cursor_iter, 0, False, 0, 0)
         self.emit('changed')
 
     def get_text(self):
