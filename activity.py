@@ -268,6 +268,7 @@ class WriteBooksActivity(activity.Activity):
 
     def write_file(self, file_path):
         self._book_model.write(file_path)
+        self.metadata['mime_type'] = 'application/x-writebooks-activity'
 
     def read_file(self, file_path):
         self._book_model.read(file_path)
