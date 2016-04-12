@@ -102,7 +102,7 @@ msgid "Transportation"
 msgstr ""
 
 #: activity.py:337
-msgid "Select a image to add"
+msgid "Select an image to add"
 msgstr ""
 
 #: activity.py:351
