@@ -142,7 +142,7 @@ class WriteBooksActivity(activity.Activity):
         toolbar_box.toolbar.insert(self._add_page_button, -1)
 
         self._remove_button = ToolButton('edit-delete')
-        self._remove_button.set_tooltip(_('Remove a image or page'))
+        self._remove_button.set_tooltip(_('Remove an image or page'))
         self._remove_button.connect('clicked', self.__remove_clicked_cb)
         toolbar_box.toolbar.insert(self._remove_button, -1)
 
