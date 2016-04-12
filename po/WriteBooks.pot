@@ -38,7 +38,7 @@ msgid "Add a page"
 msgstr ""
 
 #: activity.py:120
-msgid "Remove a image or page"
+msgid "Remove an image or page"
 msgstr ""
 
 #: activity.py:125
@@ -102,7 +102,7 @@ msgid "Transportation"
 msgstr ""
 
 #: activity.py:337
-msgid "Select a image to add"
+msgid "Select an image to add"
 msgstr ""
 
 #: activity.py:351
