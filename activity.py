@@ -383,7 +383,7 @@ class WriteBooksActivity(activity.Activity):
                 os.path.join(TUXPAINT_STAMPS_PATH, 'vehicles')]}
 
         chooser = ImageFileChooser(image_type='actors',
-                                   title=_('Select a image to add'),
+                                   title=_('Select an image to add'),
                                    categories=categories,
                                    language=self._language,
                                    translations=self._translations,
