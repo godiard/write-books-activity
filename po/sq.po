@@ -1,0 +1,207 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-04-17 09:38-0300\n"
+"PO-Revision-Date: 2016-10-29 22:18+0000\n"
+"Last-Translator: Chris <cjl@sugarlabs.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: sq\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.5.1.1\n"
+"X-POOTLE-MTIME: 1477779482.000000\n"
+
+#: activity/activity.info:2
+msgid "WriteBooks"
+msgstr "Shkruani Libra"
+
+#: activity.py:92
+msgid "Set the background"
+msgstr "Caktoni sfondin"
+
+#: activity.py:98
+msgid "Add a picture"
+msgstr "Shtoni foto&Pamje"
+
+#: activity.py:109
+msgid "Duplicate page"
+msgstr "Përsëdyte faqen"
+
+#: activity.py:115
+msgid "Add a page"
+msgstr "Shtoni faqe"
+
+#: activity.py:120
+msgid "Remove an image or page"
+msgstr "Hiqni një figurë ose faqe"
+
+#: activity.py:125
+msgid "Previous page"
+msgstr "Faqja e mëparshme"
+
+#: activity.py:130
+msgid "Next page"
+msgstr "Faqja pasuese"
+
+#: activity.py:135
+msgid "View pages"
+msgstr "Shihni faqe"
+
+#: activity.py:150
+msgid "Save as EPUB book"
+msgstr "Ruajeni si libër EPUB"
+
+#: activity.py:272
+msgid "Indoors"
+msgstr "Brenda shtëpie"
+
+#: activity.py:273
+msgid "Nature"
+msgstr "Natyrë"
+
+#: activity.py:274
+msgid "Outdoors"
+msgstr "Jashtë shtëpie"
+
+#: activity.py:275
+msgid "Sports"
+msgstr "Sporte"
+
+#: activity.py:278
+msgid "Select a background"
+msgstr "Përzgjidhni sfond"
+
+#: activity.py:328
+msgid "Animals"
+msgstr "Kafshë"
+
+#: activity.py:329
+msgid "Fantasy"
+msgstr "Fantazi"
+
+#: activity.py:330
+msgid "Letters"
+msgstr "Shkronja"
+
+#: activity.py:331
+msgid "People"
+msgstr "Njerëz"
+
+#: activity.py:332
+msgid "Things"
+msgstr "Gjëra"
+
+#: activity.py:333
+msgid "Transportation"
+msgstr "Bartje"
+
+#: activity.py:337
+msgid "Select an image to add"
+msgstr "Përzgjidhni figurë për shtim"
+
+#: activity.py:351
+msgid "Do you want remove the selected image?"
+msgstr "Doni të hiqet figura e përzgjedhur?"
+
+#: activity.py:358
+msgid "Do you want remove the page?"
+msgstr "Doni të hiqet faqja?"
+
+#: activity.py:444
+msgid "Book creation"
+msgstr "Krijimi librash"
+
+#: activity.py:445
+msgid "Do you want to add an image for the cover?"
+msgstr "Doni të shtohet një figurë për kapakun?"
+
+#: activity.py:447
+msgid "Yes"
+msgstr "Po"
+
+#: activity.py:450
+msgid "No"
+msgstr "Jo"
+
+#: activity.py:502
+#, python-format
+msgid "\"%s\" as book"
+msgstr "\"%s\" si libër"
+
+#: activity.py:524
+msgid "Book created"
+msgstr "Libri u krijua"
+
+#: activity.py:525
+msgid "You can read the book in your Journal"
+msgstr "Librin mund ta lexoni te Ditari juaj"
+
+#: activity.py:528
+msgid "Show in Journal"
+msgstr "Shfaqe në Ditar"
+
+#: activity.py:531
+msgid "Ok"
+msgstr "Ok"
+
+#: iconview.py:246 tmp/listview.py:390
+msgid "Your Journal is empty"
+msgstr "Ditari juaj është i zbrazët"
+
+#: iconview.py:249 tmp/listview.py:393
+msgid "Your documents folder is empty"
+msgstr "Dosja juaj e dokumenteve është e zbrazët"
+
+#: iconview.py:251 tmp/listview.py:395
+msgid "The device is empty"
+msgstr "Pajisja është e zbrazët"
+
+#: iconview.py:254 tmp/listview.py:397
+msgid "No matching entries"
+msgstr "S’ka zëra me përputhje"
+
+#: iconview.py:336 tmp/listview.py:483
+msgid "Clear search"
+msgstr "Pastroje kërkimin"
+
+#: imagechooser.py:209
+msgid "Select from the Journal"
+msgstr "Përzgjidhni nga Ditari"
+
+#: imagechooser.py:215
+msgid "Choose an image"
+msgstr "Zgjidhni figurë"
+
+#: imagechooser.py:222
+msgid "Close"
+msgstr "Mbylle"
+
+#: imagechooser.py:254
+msgid "Search"
+msgstr "Kërko"
+
+#: imagechooser.py:264
+msgid "Back"
+msgstr "Mbrapsht"
+
+#: iconmodel.py:108
+msgid "Untitled"
+msgstr "Pa titull"
+
+#: epubfactory.py:53
+#, python-format
+msgid "by %s"
+msgstr "nga %s"
+
+#: tmp/palettes.py:96
+#, python-format
+msgid "%(free_space)d MB Free"
+msgstr "%(free_space)d MB të Lira"
