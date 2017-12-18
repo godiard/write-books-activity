@@ -175,7 +175,7 @@ class ImageFileChooser(Gtk.Window):
                     for root, dirs, files in os.walk(category_path):
                         for name in files:
                             extension = name[name.rfind('.') + 1:].lower()
-                            if extension not in ['jpg', 'png', 'svg']:
+                            if extension not in ['jpg', 'png', 'svg', 'gif']:
                                 continue
                             origin = os.path.join(root, name)
                             if self._translations is not None and \
